@@ -17,10 +17,10 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SDKs de Firebase (Compatibilidad v8 para uso sencillo) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- SDKs de Firebase cargados mediante jsDelivr (Evita bloqueos de red y gstatic) -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-firestore.js"></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 
@@ -139,8 +139,8 @@
                     <div id="import-alerts" class="text-xs font-medium text-amber-600"></div>
                     <div class="flex gap-2">
                         <label class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-200 transition flex items-center gap-2">
-                            <i class="fa-solid fa-file-arrow-up"></i> Subir .txt
-                            <input type="file" id="file-upload" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
+                            <i class="fa-solid fa-file-arrow-up"></i> Subir .txt / Word
+                            <input type="file" id="file-upload" accept=".txt,.doc,.docx" class="hidden" onchange="handleFileUpload(event)">
                         </label>
                         <button onclick="saveExam()" class="bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition flex items-center gap-2">
                             <i class="fa-solid fa-floppy-disk"></i> Guardar
@@ -257,8 +257,7 @@
     <!-- ========================================== -->
     <script>
         // ==========================================
-        // TODO: REEMPLAZA ESTO CON TU CONFIGURACIÓN DE FIREBASE
-        // Ve a Firebase Console -> Project Settings -> Web App y copia el objeto config
+        // CONFIGURACIÓN DE FIREBASE
         // ==========================================
         const firebaseConfig = {
             apiKey: "TU_API_KEY",
@@ -286,7 +285,7 @@
         let currentUser = null;
         let activeParentIdForNewFolder = null;
         let targetFolderIdForImport = null;
-        let itemToMove = { id: null, type: null, sourceParentId: null }; // type: 'folder' | 'exam'
+        let itemToMove = { id: null, type: null, sourceParentId: null };
         let examInProgress = false;
 
         // ----------------------------------------------------
@@ -323,7 +322,6 @@
             const errDiv = document.getElementById('auth-error');
             try {
                 const cred = await auth.createUserWithEmailAndPassword(e, p);
-                // Inicializa BD vacía
                 await db.collection('users').doc(cred.user.uid).set({
                     folders: [], mistakes: [], stats: {}
                 });
@@ -399,7 +397,7 @@
             }
             document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            document.getElementById('import-section').classList.add('hidden'); // Reinicia zona importar
+            document.getElementById('import-section').classList.add('hidden');
             
             const btnBack = document.getElementById('btn-back');
             if (viewName === 'home' || viewName === 'login') btnBack.classList.add('hidden');
@@ -416,13 +414,13 @@
         });
 
         // ----------------------------------------------------
-        // GESTIÓN DE CARPETAS Y ESTADO VACÍO (UI Exacta pedida)
+        // GESTIÓN DE CARPETAS Y ESTADO VACÍO
         // ----------------------------------------------------
         function renderFoldersTree() {
             const container = document.getElementById('folders-tree-container');
             if (appState.folders.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-10 space-y-5 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                    <div class="text-center py-10 space-y-5 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <i class="fa-solid fa-folder-open text-5xl text-slate-300 dark:text-slate-600"></i>
                         <p class="text-slate-500 font-bold">Aquí aparecerán tus temas y exámenes.</p>
                         <div class="flex flex-col gap-3 max-w-sm mx-auto mt-4 px-4">
@@ -466,7 +464,7 @@
                             <button onclick="openNewFolderModal('${f.id}')" class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1.5 rounded" title="Subcarpeta"><i class="fa-solid fa-folder-plus text-slate-500"></i></button>
                             <button onclick="prepareImport('${f.id}', '${f.name}')" class="text-xs bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-400 px-2 py-1.5 rounded" title="Añadir Examen"><i class="fa-solid fa-file-circle-plus"></i></button>
                             
-                            <!-- BOTÓN MOVER (Opciones) -->
+                            <!-- BOTÓN MOVER -->
                             <button onclick="openMoveModal('${f.id}', 'folder', '${f.parentId || null}')" class="px-2 py-1.5 text-slate-400 hover:text-brand-500" title="Mover Carpeta"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                             
                             <button onclick="toggleCollapse('${f.id}')" class="px-2 py-1.5"><i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i></button>
@@ -492,7 +490,6 @@
 
         function toggleCollapse(id) { document.getElementById(`content_${id}`).classList.toggle('hidden'); }
 
-        // Creación de Carpetas
         function openNewFolderModal(parentId) {
             activeParentIdForNewFolder = parentId;
             document.getElementById('folder-name-input').value = '';
@@ -516,7 +513,6 @@
             await syncDataToCloud();
         }
 
-        // Buscar nodo en árbol
         function findNode(array, id) {
             for (let f of array) {
                 if (f.id === id) return f;
@@ -529,13 +525,12 @@
         }
 
         // ----------------------------------------------------
-        // SISTEMA DE MOVER (Carpetas y Exámenes)
+        // SISTEMA DE MOVER
         // ----------------------------------------------------
         function openMoveModal(itemId, itemType, sourceParentId) {
             itemToMove = { id: itemId, type: itemType, sourceParentId: sourceParentId };
             const container = document.getElementById('move-destinations-tree');
             
-            // Generar lista de destinos (solo carpetas, excluyendo la carpeta a mover y sus hijos para evitar bucles)
             let html = `<div onclick="executeMove(null)" class="cursor-pointer p-2 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg text-sm font-bold border-b border-slate-200 dark:border-slate-700 mb-2"><i class="fa-solid fa-home text-slate-400 mr-2"></i> Mover a la Raíz (Inicio)</div>`;
             html += generateMoveDestinations(appState.folders, 0, itemId, itemType);
             
@@ -546,12 +541,9 @@
         function generateMoveDestinations(foldersArray, level, excludeId, itemType) {
             let html = '';
             for (let f of foldersArray) {
-                // Si estoy moviendo una carpeta, no puedo meterla dentro de sí misma
                 if (itemType === 'folder' && f.id === excludeId) continue;
-                
                 const pad = level * 1.5;
                 html += `<div onclick="executeMove('${f.id}')" class="cursor-pointer p-2 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg text-sm flex items-center gap-2 transition" style="margin-left: ${pad}rem"><i class="fa-solid fa-folder text-amber-500"></i> ${f.name}</div>`;
-                
                 if (f.folders && f.folders.length > 0) {
                     html += generateMoveDestinations(f.folders, level + 1, excludeId, itemType);
                 }
@@ -562,15 +554,12 @@
         function closeMoveModal() { document.getElementById('modal-move').classList.add('hidden'); }
 
         async function executeMove(destinationFolderId) {
-            // 1. Encontrar y extraer el item de su lugar original
             let extractedItem = null;
             
             if (itemToMove.sourceParentId === 'null' || !itemToMove.sourceParentId) {
-                // Estaba en la raíz
                 const idx = appState.folders.findIndex(f => f.id === itemToMove.id);
                 if (idx > -1) extractedItem = appState.folders.splice(idx, 1)[0];
             } else {
-                // Estaba en una subcarpeta
                 const parentFolder = findNode(appState.folders, itemToMove.sourceParentId);
                 if (parentFolder) {
                     if (itemToMove.type === 'folder') {
@@ -585,15 +574,13 @@
 
             if (!extractedItem) return alert("Error al extraer el archivo.");
 
-            // 2. Insertarlo en el destino
             if (destinationFolderId === null) {
-                // Mover a la raíz (solo permitido para carpetas)
                 if (itemToMove.type === 'folder') {
                     extractedItem.parentId = null;
                     appState.folders.push(extractedItem);
                 } else {
                     alert("Los exámenes deben estar dentro de una carpeta.");
-                    return closeMoveModal(); // Falla si intenta poner un examen suelto en la raíz
+                    return closeMoveModal();
                 }
             } else {
                 const destFolder = findNode(appState.folders, destinationFolderId);
@@ -611,11 +598,11 @@
 
             closeMoveModal();
             renderFoldersTree();
-            await syncDataToCloud(); // Guardado automático
+            await syncDataToCloud();
         }
 
         // ----------------------------------------------------
-        // IMPORTAR EXÁMENES (Archivos o Texto)
+        // IMPORTAR EXÁMENES
         // ----------------------------------------------------
         function prepareImport(id, name) {
             targetFolderIdForImport = id;
@@ -644,10 +631,9 @@
             if (dest) {
                 showLoading("Procesando y guardando en la nube...");
                 dest.exams = dest.exams || [];
-                // Simulamos procesar preguntas. Aquí va tu lógica de parsing real.
                 dest.exams.push({ id: 'ex_' + Date.now(), name: name, questions: Array(5).fill({}) });
                 
-                await syncDataToCloud(); // Sincroniza al instante
+                await syncDataToCloud();
                 
                 hideLoading();
                 cancelImport();
@@ -673,7 +659,6 @@
             c.innerHTML = appState.folders.length === 0 ? `<div class="text-center text-slate-400 py-4 text-sm">No tienes exámenes para seleccionar.</div>` : '<i>(Selección de exámenes renderizada aquí)</i>';
         }
 
-        // Modo oscuro
         document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); });
     </script>
 </body>
