@@ -10,19 +10,22 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
-                    }
+                    colors: { brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' } }
                 }
             }
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SDKs de Firebase (Compatibilidad v8 para uso sencillo) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 
-    <!-- CABECERA INTELIGENTE -->
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-sm">
+    <!-- CABECERA PRINCIPAL -->
+    <header id="main-header" class="hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
         <div class="flex items-center space-x-3">
             <button id="btn-back" class="hidden text-slate-600 dark:text-slate-300 hover:text-brand-600 p-2 rounded-lg transition" title="Volver atrás">
                 <i class="fa-solid fa-arrow-left text-lg"></i>
@@ -35,10 +38,10 @@
             </div>
         </div>
         <div class="flex items-center space-x-2">
-            <div class="relative">
-                <input type="text" id="global-search" placeholder="Buscar test o pregunta..." class="hidden md:block bg-slate-100 dark:bg-slate-700 text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 w-48 transition">
-            </div>
-            <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Cambiar modo oscuro/claro">
+            <button onclick="openSettings()" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Configuración">
+                <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+            <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Cambiar tema">
                 <i class="fa-solid fa-moon dark:hidden"></i>
                 <i class="fa-solid fa-sun hidden dark:inline"></i>
             </button>
@@ -46,333 +49,632 @@
     </header>
 
     <!-- INDICADOR DE CARGA GLOBAL -->
-    <div id="loading-spinner" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl flex items-center space-x-4">
-            <div class="animate-spin rounded-full h-8 w-8 border-4 border-brand-500 border-t-transparent"></div>
-            <span id="loading-text" class="font-medium text-sm">Procesando preguntas...</span>
+    <div id="loading-spinner" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center space-y-4">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-brand-500 border-t-transparent"></div>
+            <span id="loading-text" class="font-bold text-sm text-brand-600">Sincronizando...</span>
         </div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- CONTENEDOR DE VISTAS -->
     <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 space-y-6" id="main-container">
         
-        <!-- BANNER PRINCIPAL EQUILIBRADO -->
-        <div class="bg-gradient-to-r from-brand-600 to-emerald-700 text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="space-y-2">
-                <h1 class="text-2xl md:text-3xl font-extrabold">Entrenamiento Inteligente</h1>
-                <p class="text-emerald-100 text-sm">Plataforma avanzada de test, simulación y optimización de estudio personalizada.</p>
+        <!-- VISTA 0: LOGIN / REGISTRO -->
+        <div id="view-login" class="flex flex-col items-center justify-center min-h-[70vh] space-y-6">
+            <div class="bg-brand-600 text-white p-4 rounded-3xl shadow-lg mb-4">
+                <i class="fa-solid fa-brain text-5xl"></i>
             </div>
-            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <button onclick="router('exam-setup')" class="bg-white text-brand-600 font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:bg-emerald-50 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-play"></i> Empezar Test
-                </button>
-            </div>
-        </div>
-
-        <!-- BLOQUE DE ACCESOS PRINCIPALES CON TAMAÑOS HOMOGÉNEOS Y DESCRIPCIONES CLARAS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h1 class="text-3xl font-extrabold">HIITest</h1>
+            <p class="text-slate-500 text-sm">Entrenamiento Inteligente</p>
             
-            <!-- TARJETA 1: GESTIÓN -->
-            <div onclick="router('manage-folders')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
-                <div class="flex items-center justify-between text-brand-600 dark:text-brand-400">
-                    <i class="fa-solid fa-folder-tree text-3xl"></i>
-                    <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
-                </div>
-                <div class="space-y-1">
-                    <h3 class="font-bold text-xl">Gestionar Temas</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Añade aquí tus exámenes y organiza las carpetas de tus materias.</p>
-                </div>
-            </div>
-
-            <!-- TARJETA 2: REPASO DE FALLOS -->
-            <div onclick="router('review-mistakes')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
-                <div class="flex items-center justify-between text-amber-500">
-                    <i class="fa-solid fa-rotate-left text-3xl"></i>
-                    <span class="text-xs bg-amber-50 dark:bg-slate-700 px-2.5 py-1 rounded-full font-medium">Activo</span>
-                </div>
-                <div class="space-y-1">
-                    <h3 class="font-bold text-xl">Modo Fallos</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Repasa exclusivamente las preguntas que has fallado en simulacros anteriores.</p>
+            <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl w-full max-w-md space-y-4">
+                <div id="auth-error" class="hidden text-xs text-rose-500 bg-rose-50 dark:bg-rose-900/30 p-3 rounded-lg font-bold"></div>
+                <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <input type="password" id="auth-pass" placeholder="Contraseña" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                
+                <div class="pt-2 flex flex-col gap-3">
+                    <button onclick="handleLogin()" class="w-full bg-brand-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-brand-700 transition">Iniciar Sesión</button>
+                    <button onclick="handleRegister()" class="w-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition">Crear Cuenta Nueva</button>
                 </div>
             </div>
-
-            <!-- TARJETA 3: ESTADÍSTICAS Y RENDIMIENTO POR TEMAS -->
-            <div onclick="router('statistics')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
-                <div class="flex items-center justify-between text-indigo-500">
-                    <i class="fa-solid fa-chart-pie text-3xl"></i>
-                    <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
-                </div>
-                <div class="space-y-1">
-                    <h3 class="font-bold text-xl">Tus Estadísticas</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Analiza qué temas llevas mejor y cuáles necesitas reforzar más.</p>
-                </div>
-            </div>
-
         </div>
 
-        <!-- VISTA: GESTIÓN DE CARPETAS Y TEMAS (INCLUYE SUBIDA) -->
-        <div id="view-manage-folders" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-folder-tree text-brand-600"></i> Organizar Materias y Exámenes</h2>
-                <button onclick="openNewFolderModal()" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition">
-                    <i class="fa-solid fa-plus mr-1"></i> Nueva Carpeta
+        <!-- VISTA 1: INICIO (DASHBOARD) -->
+        <div id="view-home" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-brand-600 to-emerald-700 text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="space-y-2">
+                    <h1 class="text-2xl md:text-3xl font-extrabold">¡Hola, Opositor!</h1>
+                    <p class="text-emerald-100 text-sm">Plataforma avanzada de test y simulación.</p>
+                </div>
+                <button onclick="router('exam-setup')" class="w-full md:w-auto bg-white text-brand-600 font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:bg-emerald-50 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Configurar Test
                 </button>
             </div>
 
-            <!-- CONTENEDOR JERÁRQUICO DE CARPETAS (PLEGABLES) -->
-            <div id="folders-tree-container" class="space-y-3"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div onclick="router('manage-folders')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between text-brand-600 dark:text-brand-400">
+                        <i class="fa-solid fa-folder-tree text-3xl"></i>
+                        <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-xl">Gestionar Temas</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">Crea carpetas y añade aquí tus exámenes y baterías de preguntas.</p>
+                    </div>
+                </div>
+                <div onclick="router('statistics')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between text-indigo-500">
+                        <i class="fa-solid fa-chart-pie text-3xl"></i>
+                        <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-xl">Tus Estadísticas</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">Analiza qué temas llevas mejor y cuáles necesitas reforzar más.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <!-- ZONA DE IMPORTACIÓN DE ARCHIVOS -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                <h3 class="font-bold text-lg">Añadir Nueva Batería</h3>
-                <p class="text-xs text-slate-500">Pega el texto del examen o estructura de preguntas aquí.</p>
+        <!-- VISTA 2: GESTIÓN DE CARPETAS Y TEMAS -->
+        <div id="view-manage-folders" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-folder-tree text-brand-600"></i> Tus Temarios</h2>
+            </div>
+
+            <!-- CONTENEDOR DEL ÁRBOL O ESTADO VACÍO -->
+            <div id="folders-tree-container" class="space-y-3 min-h-[200px]"></div>
+
+            <!-- ZONA DE IMPORTACIÓN DE EXÁMENES -->
+            <div id="import-section" class="hidden bg-white dark:bg-slate-800 p-6 rounded-3xl border border-brand-200 dark:border-brand-900/50 shadow-md space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                    <h3 class="font-bold text-lg text-brand-600">Añadir Examen en: <span id="target-folder-name" class="text-slate-800 dark:text-white"></span></h3>
+                    <button onclick="cancelImport()" class="text-slate-400 hover:text-rose-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
                 
-                <textarea id="import-text-input" rows="6" placeholder="Pega el contenido del examen..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                <input type="text" id="new-exam-name" placeholder="Título del examen (Ej: Test Tema 1)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-500">
+
+                <textarea id="import-text-input" rows="6" placeholder="Pega el contenido del examen aquí..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
                 
                 <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
                     <div id="import-alerts" class="text-xs font-medium text-amber-600"></div>
                     <div class="flex gap-2">
-                        <button onclick="handleSkipExplanations()" id="btn-skip-exp" class="hidden bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-300 transition">
-                            Saltar Explicaciones y Guardar
-                        </button>
-                        <button onclick="processAndSaveQuestions()" class="bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar Examen
+                        <label class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-200 transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-arrow-up"></i> Subir .txt
+                            <input type="file" id="file-upload" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
+                        </label>
+                        <button onclick="saveExam()" class="bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- VISTA: ESTADÍSTICAS Y RENDIMIENTO (MEJOR / PEOR Llevado) -->
-        <div id="view-statistics" class="hidden space-y-6">
-            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-brand-600"></i> Análisis de Rendimiento</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                    <h3 class="font-bold text-emerald-600 flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> Temas Mejor Llevados</h3>
-                    <div class="space-y-2 text-sm" id="best-topics-list">
-                        <div class="p-3 bg-emerald-50 dark:bg-slate-900 rounded-2xl flex justify-between"><span>Constitución Española</span><span class="font-bold text-emerald-600">92% aciertos</span></div>
-                    </div>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                    <h3 class="font-bold text-rose-600 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Temas a Reforzar (Peor Llevados)</h3>
-                    <div class="space-y-2 text-sm" id="worst-topics-list">
-                        <div class="p-3 bg-rose-50 dark:bg-slate-900 rounded-2xl flex justify-between"><span>Procedimiento Administrativo</span><span class="font-bold text-rose-600">45% aciertos</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VISTA: CONFIGURACIÓN Y SELECCIÓN VISUAL DE EXAMEN -->
+        <!-- VISTA 3: CONFIGURAR SIMULACRO -->
         <div id="view-exam-setup" class="hidden space-y-6">
-            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-600"></i> Configurar Simulacro</h2>
-            <p class="text-xs text-slate-500">Selecciona visualmente las baterías que deseas practicar en esta sesión.</p>
-
-            <div id="exam-selection-tree" class="space-y-3"></div>
-
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="text-sm">
-                    <span class="font-semibold text-slate-500">Exámenes seleccionados:</span> 
-                    <span id="selected-count-badge" class="font-bold text-brand-600 ml-1">0</span>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-600"></i> Configurar Simulacro</h2>
+                    <p class="text-xs text-slate-500 mt-1">Selecciona los temas a practicar o repasa tus fallos.</p>
                 </div>
-                <button onclick="startActiveExam()" class="w-full md:w-auto bg-brand-600 text-white font-bold px-8 py-3 rounded-2xl shadow-lg hover:bg-brand-700 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-play"></i> Comenzar Simulacro
+                <button class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 px-5 py-2.5 rounded-2xl font-bold text-sm hover:bg-amber-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> Modo Fallos
+                </button>
+            </div>
+            <div id="exam-selection-tree" class="space-y-3 bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[150px]"></div>
+            
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex justify-between items-center">
+                <div class="text-sm font-semibold">Exámenes: <span id="selected-count-badge" class="text-brand-600 ml-1">0</span></div>
+                <button onclick="startActiveExam()" class="bg-brand-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg hover:bg-brand-700 transition">
+                    <i class="fa-solid fa-play"></i> Comenzar
                 </button>
             </div>
         </div>
 
-        <!-- VISTA: EJECUCIÓN DEL EXAMEN -->
+        <!-- VISTA 4: EXAMEN ACTIVO -->
         <div id="view-active-exam" class="hidden space-y-6">
-            <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-                <div class="text-sm font-semibold" id="exam-progress-indicator">Pregunta 1 de 10</div>
+            <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm">
+                <div class="text-sm font-semibold">Simulacro Activo</div>
                 <div class="text-brand-600 font-mono font-bold" id="exam-timer">00:00</div>
             </div>
-
-            <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                <h3 class="text-lg font-bold" id="question-title">Cargando pregunta...</h3>
-                <div class="space-y-3" id="answers-container"></div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm min-h-[250px] flex items-center justify-center text-slate-400">
+                El motor del examen irá aquí.
             </div>
-
-            <div class="flex justify-between">
-                <button onclick="previousQuestion()" class="bg-slate-200 dark:bg-slate-700 px-5 py-2.5 rounded-xl font-semibold text-sm">Anterior</button>
-                <button onclick="nextQuestion()" class="bg-brand-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow">Siguiente</button>
+        </div>
+        
+        <!-- VISTA 5: ESTADÍSTICAS -->
+        <div id="view-statistics" class="hidden space-y-6">
+            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-brand-600"></i> Estadísticas</h2>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl text-center text-slate-500 shadow-sm">
+                Realiza tu primer simulacro para generar datos.
             </div>
         </div>
     </main>
 
-    <!-- MODAL DE CONFIRMACIÓN DE SALIDA SEGURA -->
-    <div id="modal-exit-confirm" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-4 text-center shadow-2xl">
-            <div class="text-amber-500 text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <h3 class="font-bold text-lg">¿Estás seguro que quieres salir del examen?</h3>
-            <p class="text-xs text-slate-500">Se perderá el progreso actual del simulacro activo.</p>
-            <div class="flex gap-2 pt-2">
-                <button onclick="closeExitModal()" class="flex-1 bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-semibold text-sm">Cancelar</button>
-                <button onclick="confirmExitExam()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-semibold text-sm shadow">Salir</button>
+    <!-- MODALES Y POPUPS -->
+    <!-- Modal: Nueva Carpeta -->
+    <div id="modal-new-folder" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl">
+            <h3 class="font-bold text-lg">Crear Nuevo Tema</h3>
+            <input type="text" id="folder-name-input" placeholder="Nombre de la carpeta" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <div class="flex gap-2">
+                <button onclick="closeNewFolderModal()" class="flex-1 bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-bold text-sm">Cancelar</button>
+                <button onclick="createFolder()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-bold text-sm shadow">Crear</button>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT DE CONTROL -->
-    <script>
-        let appState = {
-            currentView: 'home',
-            examInProgress: false,
-            folders: [
-                {
-                    id: 'f1', name: 'BLOQUE JURÍDICO', folders: [
-                        { id: 'f2', name: 'CONSTITUCIÓN', exams: [{ id: 'e1', name: 'Test 1 - Derechos Fundamentales', questions: [] }] },
-                        { id: 'f3', name: 'PROCEDIMIENTO', exams: [{ id: 'e2', name: 'Test 1 - Fases del Procedimiento', questions: [] }] }
-                    ], exams: []
-                }
-            ],
-            selectedExams: [],
-            mistakes: []
-        };
+    <!-- Modal: Mover (Carpetas o Exámenes) -->
+    <div id="modal-move" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-md w-full space-y-4 shadow-2xl">
+            <h3 class="font-bold text-lg border-b border-slate-200 dark:border-slate-700 pb-2">Mover a...</h3>
+            <p class="text-xs text-slate-500">Selecciona la carpeta destino.</p>
+            <div id="move-destinations-tree" class="max-h-64 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                <!-- Se inyecta dinámicamente -->
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeMoveModal()" class="w-full bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-bold text-sm">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Modal: Configuración (Ajustes de Usuario) -->
+    <div id="modal-settings" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-gear text-slate-500 mr-2"></i> Configuración</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="exportBackup()" class="w-full text-left bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-3 rounded-xl font-semibold text-sm hover:bg-indigo-100 transition flex items-center gap-3">
+                    <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Crear Copia de Seguridad
+                </button>
+                <button onclick="forceSync()" class="w-full text-left bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 p-3 rounded-xl font-semibold text-sm hover:bg-slate-200 transition flex items-center gap-3">
+                    <i class="fa-solid fa-rotate text-lg"></i> Forzar Sincronización
+                </button>
+                <button onclick="handleLogout()" class="w-full text-left bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 p-3 rounded-xl font-semibold text-sm hover:bg-rose-100 transition flex items-center gap-3">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Salida Segura (Examen) -->
+    <div id="modal-exit-confirm" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm text-center shadow-2xl space-y-4">
+            <div class="text-amber-500 text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="font-bold text-lg">¿Salir del examen?</h3>
+            <div class="flex gap-2">
+                <button onclick="closeExitModal()" class="flex-1 bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-bold">Cancelar</button>
+                <button onclick="confirmExitExam()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-bold">Salir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCRIPT PRINCIPAL: FIREBASE, LÓGICA Y UI    -->
+    <!-- ========================================== -->
+    <script>
+        // ==========================================
+        // TODO: REEMPLAZA ESTO CON TU CONFIGURACIÓN DE FIREBASE
+        // Ve a Firebase Console -> Project Settings -> Web App y copia el objeto config
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "TUS_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+        
+        // Inicializar Firebase (Solo si no está inicializado)
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ESTADO GLOBAL DE LA APP
+        let appState = {
+            folders: [],
+            mistakes: [],
+            stats: {}
+        };
+        
+        let currentUser = null;
+        let activeParentIdForNewFolder = null;
+        let targetFolderIdForImport = null;
+        let itemToMove = { id: null, type: null, sourceParentId: null }; // type: 'folder' | 'exam'
+        let examInProgress = false;
+
+        // ----------------------------------------------------
+        // SISTEMA DE AUTENTICACIÓN Y SINCRONIZACIÓN
+        // ----------------------------------------------------
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('main-header').classList.remove('hidden');
+                loadUserData();
+            } else {
+                currentUser = null;
+                document.getElementById('main-header').classList.add('hidden');
+                router('login');
+            }
+        });
+
+        async function handleLogin() {
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-pass').value;
+            const errDiv = document.getElementById('auth-error');
+            try {
+                await auth.signInWithEmailAndPassword(e, p);
+                errDiv.classList.add('hidden');
+            } catch (error) {
+                errDiv.innerText = "Error: Verifica tu correo y contraseña.";
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        async function handleRegister() {
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-pass').value;
+            const errDiv = document.getElementById('auth-error');
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(e, p);
+                // Inicializa BD vacía
+                await db.collection('users').doc(cred.user.uid).set({
+                    folders: [], mistakes: [], stats: {}
+                });
+                errDiv.classList.add('hidden');
+            } catch (error) {
+                errDiv.innerText = "Error al crear cuenta: " + error.message;
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            auth.signOut();
+            closeSettings();
+        }
+
+        async function loadUserData() {
+            showLoading("Cargando tus apuntes...");
+            try {
+                const doc = await db.collection('users').doc(currentUser.uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    appState.folders = data.folders || [];
+                    appState.mistakes = data.mistakes || [];
+                    appState.stats = data.stats || {};
+                } else {
+                    appState.folders = [];
+                }
+                router('home');
+            } catch (e) {
+                console.error("Error leyendo DB", e);
+                alert("Hubo un error cargando tus datos de la nube.");
+            }
+            hideLoading();
+        }
+
+        async function syncDataToCloud() {
+            if (!currentUser) return;
+            try {
+                await db.collection('users').doc(currentUser.uid).set({
+                    folders: appState.folders,
+                    mistakes: appState.mistakes,
+                    stats: appState.stats
+                }, { merge: true });
+            } catch (e) {
+                console.error("Error guardando", e);
+                alert("Error al sincronizar con la nube.");
+            }
+        }
+
+        async function forceSync() {
+            showLoading("Sincronizando con la nube...");
+            await loadUserData();
+            hideLoading();
+            closeSettings();
+        }
+
+        function exportBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "Copia_Seguridad_HIITest.json");
+            dlAnchorElem.click();
+            closeSettings();
+        }
+
+        // ----------------------------------------------------
+        // ENRUTADOR Y VISTAS
+        // ----------------------------------------------------
         function router(viewName) {
-            if (appState.examInProgress && viewName !== 'active-exam') {
+            if (examInProgress && viewName !== 'active-exam') {
                 document.getElementById('modal-exit-confirm').classList.remove('hidden');
                 return;
             }
-            
             document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            appState.currentView = viewName;
-
+            document.getElementById('import-section').classList.add('hidden'); // Reinicia zona importar
+            
             const btnBack = document.getElementById('btn-back');
-            if (viewName === 'home') btnBack.classList.add('hidden');
+            if (viewName === 'home' || viewName === 'login') btnBack.classList.add('hidden');
             else btnBack.classList.remove('hidden');
 
             if (viewName === 'manage-folders') renderFoldersTree();
             if (viewName === 'exam-setup') renderExamSelectionTree();
         }
 
-        document.getElementById('btn-home').addEventListener('click', () => router('home'));
+        document.getElementById('btn-home').addEventListener('click', () => { if(currentUser) router('home'); });
         document.getElementById('btn-back').addEventListener('click', () => {
-            if (appState.examInProgress) document.getElementById('modal-exit-confirm').classList.remove('hidden');
+            if (examInProgress) document.getElementById('modal-exit-confirm').classList.remove('hidden');
             else router('home');
         });
 
-        function confirmExitExam() {
-            appState.examInProgress = false;
-            document.getElementById('modal-exit-confirm').classList.add('hidden');
-            router('home');
-        }
-
-        function closeExitModal() {
-            document.getElementById('modal-exit-confirm').classList.add('hidden');
-        }
-
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        themeToggleBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-        });
-
+        // ----------------------------------------------------
+        // GESTIÓN DE CARPETAS Y ESTADO VACÍO (UI Exacta pedida)
+        // ----------------------------------------------------
         function renderFoldersTree() {
             const container = document.getElementById('folders-tree-container');
-            container.innerHTML = appState.folders.map(folder => `
-                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
-                    <div class="flex justify-between items-center cursor-pointer" onclick="toggleFolderCollapse('${folder.id}')">
-                        <div class="flex items-center gap-3 font-bold">
-                            <i class="fa-solid fa-folder text-amber-500"></i> ${folder.name}
+            if (appState.folders.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 space-y-5 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-folder-open text-5xl text-slate-300 dark:text-slate-600"></i>
+                        <p class="text-slate-500 font-bold">Aquí aparecerán tus temas y exámenes.</p>
+                        <div class="flex flex-col gap-3 max-w-sm mx-auto mt-4 px-4">
+                            <button onclick="openNewFolderModal(null)" class="bg-brand-600 text-white font-bold py-3 rounded-xl shadow hover:bg-brand-700 transition">
+                                <i class="fa-solid fa-folder-plus mr-2"></i> Crear tema (carpetas)
+                            </button>
+                            <button onclick="safeOpenImport()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
+                                <i class="fa-solid fa-file-arrow-up mr-2"></i> Subir documento de texto/word
+                            </button>
+                            <button onclick="safeOpenImport()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
+                                <i class="fa-solid fa-paste mr-2"></i> Añadir preguntas manualmente (copiando y pegando)
+                            </button>
                         </div>
-                        <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
                     </div>
-                    <div id="folder-content-${folder.id}" class="hidden pl-6 pt-3 space-y-2 border-t border-slate-100 dark:border-slate-700 mt-3">
-                        ${folder.folders.map(sub => `
-                            <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <div class="font-semibold text-sm flex items-center gap-2"><i class="fa-solid fa-folder-open text-brand-500"></i> ${sub.name}</div>
-                                <div class="pl-5 pt-2 space-y-1">
-                                    ${sub.exams.map(ex => `<div class="text-xs text-slate-500 flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800 last:border-0"><span><i class="fa-solid fa-file-lines mr-1"></i> ${ex.name}</span><span class="font-mono">${ex.questions.length} q</span></div>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleFolderCollapse(id) {
-            document.getElementById(`folder-content-${id}`).classList.toggle('hidden');
-        }
-
-        function renderExamSelectionTree() {
-            const container = document.getElementById('exam-selection-tree');
-            container.innerHTML = appState.folders.map(folder => `
-                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
-                    <div class="font-bold text-brand-600 mb-2"><i class="fa-solid fa-folder mr-2"></i>${folder.name}</div>
-                    <div class="space-y-2 pl-4">
-                        ${folder.folders.map(sub => `
-                            <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <div class="font-semibold text-sm mb-2 text-slate-700 dark:text-slate-200">${sub.name}</div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    ${sub.exams.map(ex => `
-                                        <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-brand-500 cursor-pointer transition shadow-sm">
-                                            <input type="checkbox" value="${ex.id}" onchange="toggleExamSelection('${ex.id}')" class="w-4 h-4 text-brand-600 rounded focus:ring-brand-500">
-                                            <div class="text-xs font-medium"><i class="fa-solid fa-file-lines text-brand-500 mr-1"></i> ${ex.name}</div>
-                                        </label>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleExamSelection(id) {
-            const idx = appState.selectedExams.indexOf(id);
-            if (idx > -1) appState.selectedExams.splice(idx, 1);
-            else appState.selectedExams.push(id);
-            document.getElementById('selected-count-badge').innerText = appState.selectedExams.length;
-        }
-
-        function processAndSaveQuestions() {
-            const spinner = document.getElementById('loading-spinner');
-            document.getElementById('loading-text').innerText = 'Analizando y guardando examen...';
-            spinner.classList.remove('hidden');
-
-            setTimeout(() => {
-                spinner.classList.add('hidden');
-                alert('¡Examen guardado correctamente!');
-                document.getElementById('import-text-input').value = '';
-            }, 600);
-        }
-
-        function handleSkipExplanations() {
-            alert('Omitiendo explicaciones y guardando...');
-            processAndSaveQuestions();
-        }
-
-        function startActiveExam() {
-            if (appState.selectedExams.length === 0) {
-                alert('Selecciona al menos un examen para comenzar.');
+                `;
                 return;
             }
-            appState.examInProgress = true;
-            router('active-exam');
-            document.getElementById('question-title').innerText = 'Pregunta 1 de prueba: ¿Cuál es el concepto principal de... ?';
-            document.getElementById('answers-container').innerHTML = `
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">A) Primera alternativa</button>
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">B) Segunda alternativa</button>
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">C) Tercera alternativa</button>
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">D) Cuarta alternativa</button>
-            `;
+            container.innerHTML = `<button onclick="openNewFolderModal(null)" class="mb-4 bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition"><i class="fa-solid fa-plus mr-1"></i> Nueva Carpeta Raíz</button>` + generateFolderHTML(appState.folders, 0);
         }
 
-        document.getElementById('import-text-input').addEventListener('input', (e) => {
-            const val = e.target.value;
-            const alerts = document.getElementById('import-alerts');
-            const btnSkip = document.getElementById('btn-skip-exp');
-            
-            if (val.length > 10 && !val.includes('*')) {
-                alerts.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> No se detectan asteriscos.';
-                btnSkip.classList.remove('hidden');
+        function safeOpenImport() {
+            if(appState.folders.length === 0) {
+                alert("Primero debes crear un Tema (carpeta) donde guardar el examen.");
+                openNewFolderModal(null);
             } else {
-                alerts.innerHTML = '';
-                btnSkip.classList.add('hidden');
+                prepareImport(appState.folders[0].id, appState.folders[0].name);
             }
-        });
+        }
+
+        function generateFolderHTML(foldersArray, level) {
+            let html = '';
+            for (const f of foldersArray) {
+                const pad = level * 1.5;
+                html += `
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 shadow-sm mb-2" style="margin-left: ${pad}rem">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3 font-bold cursor-pointer flex-1" onclick="toggleCollapse('${f.id}')">
+                            <i class="fa-solid fa-folder text-brand-500"></i> ${f.name}
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="openNewFolderModal('${f.id}')" class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1.5 rounded" title="Subcarpeta"><i class="fa-solid fa-folder-plus text-slate-500"></i></button>
+                            <button onclick="prepareImport('${f.id}', '${f.name}')" class="text-xs bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-400 px-2 py-1.5 rounded" title="Añadir Examen"><i class="fa-solid fa-file-circle-plus"></i></button>
+                            
+                            <!-- BOTÓN MOVER (Opciones) -->
+                            <button onclick="openMoveModal('${f.id}', 'folder', '${f.parentId || null}')" class="px-2 py-1.5 text-slate-400 hover:text-brand-500" title="Mover Carpeta"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            
+                            <button onclick="toggleCollapse('${f.id}')" class="px-2 py-1.5"><i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div id="content_${f.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                        ${f.folders && f.folders.length > 0 ? generateFolderHTML(f.folders, level + 1) : ''}
+                        ${f.exams && f.exams.length > 0 ? f.exams.map(ex => `
+                            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-700 ml-4">
+                                <span class="flex items-center gap-2 font-medium"><i class="fa-solid fa-file-lines text-slate-400"></i> ${ex.name}</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-mono text-slate-500">${ex.questions ? ex.questions.length : 0} preg</span>
+                                    <button onclick="openMoveModal('${ex.id}', 'exam', '${f.id}')" class="text-slate-400 hover:text-brand-500" title="Mover Examen"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </div>
+                            </div>
+                        `).join('') : ''}
+                    </div>
+                </div>`;
+            }
+            return html;
+        }
+
+        function toggleCollapse(id) { document.getElementById(`content_${id}`).classList.toggle('hidden'); }
+
+        // Creación de Carpetas
+        function openNewFolderModal(parentId) {
+            activeParentIdForNewFolder = parentId;
+            document.getElementById('folder-name-input').value = '';
+            document.getElementById('modal-new-folder').classList.remove('hidden');
+        }
+        function closeNewFolderModal() { document.getElementById('modal-new-folder').classList.add('hidden'); }
+        
+        async function createFolder() {
+            const name = document.getElementById('folder-name-input').value.trim();
+            if (!name) return alert('Escribe un nombre.');
+            
+            const newF = { id: 'f_' + Date.now(), name: name, folders: [], exams: [], parentId: activeParentIdForNewFolder };
+            if (activeParentIdForNewFolder === null) {
+                appState.folders.push(newF);
+            } else {
+                const parent = findNode(appState.folders, activeParentIdForNewFolder);
+                if (parent) parent.folders.push(newF);
+            }
+            closeNewFolderModal();
+            renderFoldersTree();
+            await syncDataToCloud();
+        }
+
+        // Buscar nodo en árbol
+        function findNode(array, id) {
+            for (let f of array) {
+                if (f.id === id) return f;
+                if (f.folders && f.folders.length > 0) {
+                    const found = findNode(f.folders, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // ----------------------------------------------------
+        // SISTEMA DE MOVER (Carpetas y Exámenes)
+        // ----------------------------------------------------
+        function openMoveModal(itemId, itemType, sourceParentId) {
+            itemToMove = { id: itemId, type: itemType, sourceParentId: sourceParentId };
+            const container = document.getElementById('move-destinations-tree');
+            
+            // Generar lista de destinos (solo carpetas, excluyendo la carpeta a mover y sus hijos para evitar bucles)
+            let html = `<div onclick="executeMove(null)" class="cursor-pointer p-2 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg text-sm font-bold border-b border-slate-200 dark:border-slate-700 mb-2"><i class="fa-solid fa-home text-slate-400 mr-2"></i> Mover a la Raíz (Inicio)</div>`;
+            html += generateMoveDestinations(appState.folders, 0, itemId, itemType);
+            
+            container.innerHTML = html;
+            document.getElementById('modal-move').classList.remove('hidden');
+        }
+
+        function generateMoveDestinations(foldersArray, level, excludeId, itemType) {
+            let html = '';
+            for (let f of foldersArray) {
+                // Si estoy moviendo una carpeta, no puedo meterla dentro de sí misma
+                if (itemType === 'folder' && f.id === excludeId) continue;
+                
+                const pad = level * 1.5;
+                html += `<div onclick="executeMove('${f.id}')" class="cursor-pointer p-2 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg text-sm flex items-center gap-2 transition" style="margin-left: ${pad}rem"><i class="fa-solid fa-folder text-amber-500"></i> ${f.name}</div>`;
+                
+                if (f.folders && f.folders.length > 0) {
+                    html += generateMoveDestinations(f.folders, level + 1, excludeId, itemType);
+                }
+            }
+            return html;
+        }
+
+        function closeMoveModal() { document.getElementById('modal-move').classList.add('hidden'); }
+
+        async function executeMove(destinationFolderId) {
+            // 1. Encontrar y extraer el item de su lugar original
+            let extractedItem = null;
+            
+            if (itemToMove.sourceParentId === 'null' || !itemToMove.sourceParentId) {
+                // Estaba en la raíz
+                const idx = appState.folders.findIndex(f => f.id === itemToMove.id);
+                if (idx > -1) extractedItem = appState.folders.splice(idx, 1)[0];
+            } else {
+                // Estaba en una subcarpeta
+                const parentFolder = findNode(appState.folders, itemToMove.sourceParentId);
+                if (parentFolder) {
+                    if (itemToMove.type === 'folder') {
+                        const idx = parentFolder.folders.findIndex(f => f.id === itemToMove.id);
+                        if (idx > -1) extractedItem = parentFolder.folders.splice(idx, 1)[0];
+                    } else if (itemToMove.type === 'exam') {
+                        const idx = parentFolder.exams.findIndex(e => e.id === itemToMove.id);
+                        if (idx > -1) extractedItem = parentFolder.exams.splice(idx, 1)[0];
+                    }
+                }
+            }
+
+            if (!extractedItem) return alert("Error al extraer el archivo.");
+
+            // 2. Insertarlo en el destino
+            if (destinationFolderId === null) {
+                // Mover a la raíz (solo permitido para carpetas)
+                if (itemToMove.type === 'folder') {
+                    extractedItem.parentId = null;
+                    appState.folders.push(extractedItem);
+                } else {
+                    alert("Los exámenes deben estar dentro de una carpeta.");
+                    return closeMoveModal(); // Falla si intenta poner un examen suelto en la raíz
+                }
+            } else {
+                const destFolder = findNode(appState.folders, destinationFolderId);
+                if (destFolder) {
+                    if (itemToMove.type === 'folder') {
+                        extractedItem.parentId = destFolder.id;
+                        destFolder.folders = destFolder.folders || [];
+                        destFolder.folders.push(extractedItem);
+                    } else {
+                        destFolder.exams = destFolder.exams || [];
+                        destFolder.exams.push(extractedItem);
+                    }
+                }
+            }
+
+            closeMoveModal();
+            renderFoldersTree();
+            await syncDataToCloud(); // Guardado automático
+        }
+
+        // ----------------------------------------------------
+        // IMPORTAR EXÁMENES (Archivos o Texto)
+        // ----------------------------------------------------
+        function prepareImport(id, name) {
+            targetFolderIdForImport = id;
+            document.getElementById('target-folder-name').innerText = name;
+            document.getElementById('import-section').classList.remove('hidden');
+            document.getElementById('new-exam-name').value = '';
+            document.getElementById('import-text-input').value = '';
+            document.getElementById('new-exam-name').focus();
+        }
+        function cancelImport() { document.getElementById('import-section').classList.add('hidden'); }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) { document.getElementById('import-text-input').value = evt.target.result; };
+            reader.readAsText(file);
+        }
+
+        async function saveExam() {
+            const rawText = document.getElementById('import-text-input').value.trim();
+            const name = document.getElementById('new-exam-name').value.trim() || 'Nuevo Examen';
+            if (!rawText) return alert('No hay contenido para guardar.');
+
+            const dest = findNode(appState.folders, targetFolderIdForImport);
+            if (dest) {
+                showLoading("Procesando y guardando en la nube...");
+                dest.exams = dest.exams || [];
+                // Simulamos procesar preguntas. Aquí va tu lógica de parsing real.
+                dest.exams.push({ id: 'ex_' + Date.now(), name: name, questions: Array(5).fill({}) });
+                
+                await syncDataToCloud(); // Sincroniza al instante
+                
+                hideLoading();
+                cancelImport();
+                renderFoldersTree();
+                alert('¡Examen guardado correctamente!');
+            }
+        }
+
+        // ----------------------------------------------------
+        // UTILIDADES Y UI
+        // ----------------------------------------------------
+        function openSettings() { document.getElementById('modal-settings').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
+        
+        function showLoading(text) {
+            document.getElementById('loading-text').innerText = text;
+            document.getElementById('loading-spinner').classList.remove('hidden');
+        }
+        function hideLoading() { document.getElementById('loading-spinner').classList.add('hidden'); }
+
+        function renderExamSelectionTree() {
+            const c = document.getElementById('exam-selection-tree');
+            c.innerHTML = appState.folders.length === 0 ? `<div class="text-center text-slate-400 py-4 text-sm">No tienes exámenes para seleccionar.</div>` : '<i>(Selección de exámenes renderizada aquí)</i>';
+        }
+
+        // Modo oscuro
+        document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); });
     </script>
 </body>
 </html>
