@@ -17,7 +17,7 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SDKs de Firebase cargados mediante jsDelivr (Evita bloqueos de red y gstatic) -->
+    <!-- SDKs de Firebase cargados mediante jsDelivr -->
     <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-firestore.js"></script>
@@ -253,35 +253,29 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- SCRIPT PRINCIPAL: FIREBASE, LÓGICA Y UI    -->
+    <!-- SCRIPT PRINCIPAL CON TUS CLAVES REALES     -->
     <!-- ========================================== -->
     <script>
         // ==========================================
-        // CONFIGURACIÓN DE FIREBASE
+        // CONFIGURACIÓN DE FIREBASE (Tus claves reales)
         // ==========================================
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "tu-proyecto.firebaseapp.com",
-            projectId: "tu-proyecto",
-            storageBucket: "tu-proyecto.appspot.com",
-            messagingSenderId: "TUS_SENDER_ID",
-            appId: "TU_APP_ID"
+            apiKey: "AIzaSyD-oC3HEdPil30RIVowEhyzDh-gg24dTpE",
+            authDomain: "hiitest-ad475.firebaseapp.com",
+            projectId: "hiitest-ad475",
+            storageBucket: "hiitest-ad475.firebasestorage.app",
+            messagingSenderId: "689903902812",
+            appId: "1:689903902812:web:4cccc1b4952cec82b0c699",
+            measurementId: "G-CHGEGJ73LZ"
         };
         
-        // Inicializar Firebase (Solo si no está inicializado)
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ESTADO GLOBAL DE LA APP
-        let appState = {
-            folders: [],
-            mistakes: [],
-            stats: {}
-        };
-        
+        let appState = { folders: [], mistakes: [], stats: {} };
         let currentUser = null;
         let activeParentIdForNewFolder = null;
         let targetFolderIdForImport = null;
@@ -289,7 +283,7 @@
         let examInProgress = false;
 
         // ----------------------------------------------------
-        // SISTEMA DE AUTENTICACIÓN Y SINCRONIZACIÓN
+        // AUTENTICACIÓN Y CARGA RESILIENTE DE DATOS
         // ----------------------------------------------------
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -304,9 +298,14 @@
         });
 
         async function handleLogin() {
-            const e = document.getElementById('auth-email').value;
+            const e = document.getElementById('auth-email').value.trim();
             const p = document.getElementById('auth-pass').value;
             const errDiv = document.getElementById('auth-error');
+            if(!e || !p) {
+                errDiv.innerText = "Rellena todos los campos.";
+                errDiv.classList.remove('hidden');
+                return;
+            }
             try {
                 await auth.signInWithEmailAndPassword(e, p);
                 errDiv.classList.add('hidden');
@@ -317,9 +316,14 @@
         }
 
         async function handleRegister() {
-            const e = document.getElementById('auth-email').value;
+            const e = document.getElementById('auth-email').value.trim();
             const p = document.getElementById('auth-pass').value;
             const errDiv = document.getElementById('auth-error');
+            if(!e || !p) {
+                errDiv.innerText = "Rellena todos los campos.";
+                errDiv.classList.remove('hidden');
+                return;
+            }
             try {
                 const cred = await auth.createUserWithEmailAndPassword(e, p);
                 await db.collection('users').doc(cred.user.uid).set({
@@ -340,19 +344,25 @@
         async function loadUserData() {
             showLoading("Cargando tus apuntes...");
             try {
-                const doc = await db.collection('users').doc(currentUser.uid).get();
+                const docRef = db.collection('users').doc(currentUser.uid);
+                const doc = await docRef.get();
+                
                 if (doc.exists) {
                     const data = doc.data();
                     appState.folders = data.folders || [];
                     appState.mistakes = data.mistakes || [];
                     appState.stats = data.stats || {};
                 } else {
+                    await docRef.set({ folders: [], mistakes: [], stats: {} }, { merge: true });
                     appState.folders = [];
+                    appState.mistakes = [];
+                    appState.stats = {};
                 }
                 router('home');
             } catch (e) {
                 console.error("Error leyendo DB", e);
-                alert("Hubo un error cargando tus datos de la nube.");
+                appState.folders = [];
+                router('home');
             }
             hideLoading();
         }
@@ -367,7 +377,6 @@
                 }, { merge: true });
             } catch (e) {
                 console.error("Error guardando", e);
-                alert("Error al sincronizar con la nube.");
             }
         }
 
@@ -418,7 +427,7 @@
         // ----------------------------------------------------
         function renderFoldersTree() {
             const container = document.getElementById('folders-tree-container');
-            if (appState.folders.length === 0) {
+            if (!appState.folders || appState.folders.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-10 space-y-5 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <i class="fa-solid fa-folder-open text-5xl text-slate-300 dark:text-slate-600"></i>
@@ -442,7 +451,7 @@
         }
 
         function safeOpenImport() {
-            if(appState.folders.length === 0) {
+            if(!appState.folders || appState.folders.length === 0) {
                 alert("Primero debes crear un Tema (carpeta) donde guardar el examen.");
                 openNewFolderModal(null);
             } else {
@@ -503,10 +512,14 @@
             
             const newF = { id: 'f_' + Date.now(), name: name, folders: [], exams: [], parentId: activeParentIdForNewFolder };
             if (activeParentIdForNewFolder === null) {
+                appState.folders = appState.folders || [];
                 appState.folders.push(newF);
             } else {
                 const parent = findNode(appState.folders, activeParentIdForNewFolder);
-                if (parent) parent.folders.push(newF);
+                if (parent) {
+                    parent.folders = parent.folders || [];
+                    parent.folders.push(newF);
+                }
             }
             closeNewFolderModal();
             renderFoldersTree();
@@ -514,6 +527,7 @@
         }
 
         function findNode(array, id) {
+            if(!array) return null;
             for (let f of array) {
                 if (f.id === id) return f;
                 if (f.folders && f.folders.length > 0) {
@@ -539,6 +553,7 @@
         }
 
         function generateMoveDestinations(foldersArray, level, excludeId, itemType) {
+            if(!foldersArray) return '';
             let html = '';
             for (let f of foldersArray) {
                 if (itemType === 'folder' && f.id === excludeId) continue;
@@ -652,11 +667,11 @@
             document.getElementById('loading-text').innerText = text;
             document.getElementById('loading-spinner').classList.remove('hidden');
         }
-        function hideLoading() { document.getElementById('loading-spinner').classList.add('hidden'); }
+        function hideLoading() { document.getElementById('loading-spec']?.classList?.add('hidden') || document.getElementById('loading-spinner').classList.add('hidden'); }
 
         function renderExamSelectionTree() {
             const c = document.getElementById('exam-selection-tree');
-            c.innerHTML = appState.folders.length === 0 ? `<div class="text-center text-slate-400 py-4 text-sm">No tienes exámenes para seleccionar.</div>` : '<i>(Selección de exámenes renderizada aquí)</i>';
+            c.innerHTML = (!appState.folders || appState.folders.length === 0) ? `<div class="text-center text-slate-400 py-4 text-sm">No tienes exámenes para seleccionar.</div>` : '<i>(Selección de exámenes renderizada aquí)</i>';
         }
 
         document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); });
