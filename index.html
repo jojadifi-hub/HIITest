@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIITest - Oposiciones Bomberos</title>
+    <title>HIITest - Sistema de Test Inteligentes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,7 +11,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { 50: '#fff1f2', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c' }
+                        brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
                     }
                 }
             }
@@ -29,14 +29,14 @@
             </button>
             <div id="btn-home" class="flex items-center space-x-2 cursor-pointer group">
                 <div class="bg-brand-600 text-white p-2 rounded-xl group-hover:bg-brand-700 transition shadow-md">
-                    <i class="fa-solid fa-fire-flame-curved text-xl"></i>
+                    <i class="fa-solid fa-brain text-xl"></i>
                 </div>
                 <span class="font-bold text-lg tracking-tight">HIITest</span>
             </div>
         </div>
         <div class="flex items-center space-x-2">
             <div class="relative">
-                <input type="text" id="global-search" placeholder="Buscar examen o pregunta..." class="hidden md:block bg-slate-100 dark:bg-slate-700 text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 w-48 transition">
+                <input type="text" id="global-search" placeholder="Buscar test o pregunta..." class="hidden md:block bg-slate-100 dark:bg-slate-700 text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 w-48 transition">
             </div>
             <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Cambiar modo oscuro/claro">
                 <i class="fa-solid fa-moon dark:hidden"></i>
@@ -54,73 +54,81 @@
     </div>
 
     <!-- CONTENEDOR PRINCIPAL -->
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6" id="main-container">
-        <!-- VISTA DE INICIO / MENÚ -->
-        <div id="view-home" class="space-y-6">
-            <div class="bg-gradient-to-r from-brand-600 to-rose-700 text-white p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold">Simulacros de Oposición</h1>
-                    <p class="text-rose-100 text-sm mt-1">Entrenamiento inteligente y gestión de temarios para bomberos.</p>
-                </div>
-                <div class="flex gap-3 w-full md:w-auto">
-                    <button onclick="router('exam-setup')" class="flex-1 md:flex-none bg-white text-brand-600 font-bold px-5 py-3 rounded-2xl shadow-lg hover:bg-rose-50 transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-play"></i> Empezar Test
-                    </button>
-                    <button onclick="router('manage-folders')" class="flex-1 md:flex-none bg-brand-700/80 text-white font-semibold px-4 py-3 rounded-2xl hover:bg-brand-700 transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-folder-tree"></i> Gestionar Temas
-                    </button>
-                </div>
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 space-y-6" id="main-container">
+        
+        <!-- BANNER PRINCIPAL EQUILIBRADO -->
+        <div class="bg-gradient-to-r from-brand-600 to-emerald-700 text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="space-y-2">
+                <h1 class="text-2xl md:text-3xl font-extrabold">Entrenamiento Inteligente</h1>
+                <p class="text-emerald-100 text-sm">Plataforma avanzada de test, simulación y optimización de estudio personalizada.</p>
             </div>
-
-            <!-- ACCESOS RÁPIDOS Y ESTADÍSTICAS -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div onclick="router('review-mistakes')" class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer group">
-                    <div class="flex items-center justify-between text-brand-600 dark:text-brand-400 mb-3">
-                        <i class="fa-solid fa-rotate-left text-2xl"></i>
-                        <span class="text-xs bg-brand-50 dark:bg-slate-700 px-2 py-1 rounded-full font-medium">Repaso</span>
-                    </div>
-                    <h3 class="font-bold text-lg group-hover:text-brand-500 transition">Modo Fallos</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Refuerza exclusivamente aquellas preguntas que has fallado previamente.</p>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <div class="flex items-center justify-between text-indigo-500 mb-3">
-                        <i class="fa-solid fa-chart-pie text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-lg">Progreso General</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="stat-summary">0 exámenes realizados este mes.</p>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <div class="flex items-center justify-between text-emerald-500 mb-3">
-                        <i class="fa-solid fa-database text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-lg">Base Local</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="db-summary">Preguntas sincronizadas correctamente.</p>
-                </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <button onclick="router('exam-setup')" class="bg-white text-brand-600 font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:bg-emerald-50 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Empezar Test
+                </button>
             </div>
         </div>
 
-        <!-- VISTA: GESTIÓN DE CARPETAS Y TEMAS (INCLUYE SUBIDA CON BOTONES CERCANOS) -->
+        <!-- BLOQUE DE ACCESOS PRINCIPALES CON TAMAÑOS HOMOGÉNEOS Y DESCRIPCIONES CLARAS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- TARJETA 1: GESTIÓN -->
+            <div onclick="router('manage-folders')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
+                <div class="flex items-center justify-between text-brand-600 dark:text-brand-400">
+                    <i class="fa-solid fa-folder-tree text-3xl"></i>
+                    <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-bold text-xl">Gestionar Temas</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Añade aquí tus exámenes y organiza las carpetas de tus materias.</p>
+                </div>
+            </div>
+
+            <!-- TARJETA 2: REPASO DE FALLOS -->
+            <div onclick="router('review-mistakes')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
+                <div class="flex items-center justify-between text-amber-500">
+                    <i class="fa-solid fa-rotate-left text-3xl"></i>
+                    <span class="text-xs bg-amber-50 dark:bg-slate-700 px-2.5 py-1 rounded-full font-medium">Activo</span>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-bold text-xl">Modo Fallos</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Repasa exclusivamente las preguntas que has fallado en simulacros anteriores.</p>
+                </div>
+            </div>
+
+            <!-- TARJETA 3: ESTADÍSTICAS Y RENDIMIENTO POR TEMAS -->
+            <div onclick="router('statistics')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
+                <div class="flex items-center justify-between text-indigo-500">
+                    <i class="fa-solid fa-chart-pie text-3xl"></i>
+                    <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-bold text-xl">Tus Estadísticas</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Analiza qué temas llevas mejor y cuáles necesitas reforzar más.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- VISTA: GESTIÓN DE CARPETAS Y TEMAS (INCLUYE SUBIDA) -->
         <div id="view-manage-folders" class="hidden space-y-6">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-folder-tree text-brand-600"></i> Gestión de Temarios y Exámenes</h2>
+                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-folder-tree text-brand-600"></i> Organizar Materias y Exámenes</h2>
                 <button onclick="openNewFolderModal()" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition">
-                    <i class="fa-solid fa-plus mr-1"></i> Nueva Carpeta/Tema
+                    <i class="fa-solid fa-plus mr-1"></i> Nueva Carpeta
                 </button>
             </div>
 
             <!-- CONTENEDOR JERÁRQUICO DE CARPETAS (PLEGABLES) -->
-            <div id="folders-tree-container" class="space-y-3">
-                <!-- Se inyecta dinámicamente -->
-            </div>
+            <div id="folders-tree-container" class="space-y-3"></div>
 
-            <!-- ZONA DE IMPORTACIÓN DE ARCHIVOS (CON ACCIÓN DIRECTA SIN SCROLL) -->
+            <!-- ZONA DE IMPORTACIÓN DE ARCHIVOS -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                <h3 class="font-bold text-lg">Añadir Batería de Preguntas</h3>
-                <p class="text-xs text-slate-500">Pega el texto del examen o importa la estructura de preguntas directamente.</p>
+                <h3 class="font-bold text-lg">Añadir Nueva Batería</h3>
+                <p class="text-xs text-slate-500">Pega el texto del examen o estructura de preguntas aquí.</p>
                 
-                <textarea id="import-text-input" rows="6" placeholder="Pega aquí tus preguntas..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                <textarea id="import-text-input" rows="6" placeholder="Pega el contenido del examen..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
                 
-                <!-- BOTONES DE ACCIÓN RÁPIDA JUSTO DEBAJO (SIN HACER SCROLL) -->
                 <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
                     <div id="import-alerts" class="text-xs font-medium text-amber-600"></div>
                     <div class="flex gap-2">
@@ -135,15 +143,31 @@
             </div>
         </div>
 
+        <!-- VISTA: ESTADÍSTICAS Y RENDIMIENTO (MEJOR / PEOR Llevado) -->
+        <div id="view-statistics" class="hidden space-y-6">
+            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-brand-600"></i> Análisis de Rendimiento</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                    <h3 class="font-bold text-emerald-600 flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> Temas Mejor Llevados</h3>
+                    <div class="space-y-2 text-sm" id="best-topics-list">
+                        <div class="p-3 bg-emerald-50 dark:bg-slate-900 rounded-2xl flex justify-between"><span>Constitución Española</span><span class="font-bold text-emerald-600">92% aciertos</span></div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                    <h3 class="font-bold text-rose-600 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Temas a Reforzar (Peor Llevados)</h3>
+                    <div class="space-y-2 text-sm" id="worst-topics-list">
+                        <div class="p-3 bg-rose-50 dark:bg-slate-900 rounded-2xl flex justify-between"><span>Procedimiento Administrativo</span><span class="font-bold text-rose-600">45% aciertos</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- VISTA: CONFIGURACIÓN Y SELECCIÓN VISUAL DE EXAMEN -->
         <div id="view-exam-setup" class="hidden space-y-6">
-            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-600"></i> Seleccionar Exámenes para el Test</h2>
-            <p class="text-xs text-slate-500">Despliega los temas y selecciona de manera visual las baterías que deseas practicar.</p>
+            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-600"></i> Configurar Simulacro</h2>
+            <p class="text-xs text-slate-500">Selecciona visualmente las baterías que deseas practicar en esta sesión.</p>
 
-            <!-- SELECCIÓN VISUAL DE CARPETAS / EXÁMENES -->
-            <div id="exam-selection-tree" class="space-y-3">
-                <!-- Se inyecta con tarjetas interactivas de gran formato -->
-            </div>
+            <div id="exam-selection-tree" class="space-y-3"></div>
 
             <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="text-sm">
@@ -165,9 +189,7 @@
 
             <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
                 <h3 class="text-lg font-bold" id="question-title">Cargando pregunta...</h3>
-                <div class="space-y-3" id="answers-container">
-                    <!-- Opciones de respuesta -->
-                </div>
+                <div class="space-y-3" id="answers-container"></div>
             </div>
 
             <div class="flex justify-between">
@@ -177,12 +199,12 @@
         </div>
     </main>
 
-    <!-- MODAL DE CONFIRMACIÓN DE SALIDA SEGURA (DURANTE EXAMEN) -->
+    <!-- MODAL DE CONFIRMACIÓN DE SALIDA SEGURA -->
     <div id="modal-exit-confirm" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-4 text-center shadow-2xl">
             <div class="text-amber-500 text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <h3 class="font-bold text-lg">¿Estás seguro que quieres salir del examen?</h3>
-            <p class="text-xs text-slate-500">Perderás todo el progreso actual del simulacro si sales ahora.</p>
+            <p class="text-xs text-slate-500">Se perderá el progreso actual del simulacro activo.</p>
             <div class="flex gap-2 pt-2">
                 <button onclick="closeExitModal()" class="flex-1 bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-semibold text-sm">Cancelar</button>
                 <button onclick="confirmExitExam()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-semibold text-sm shadow">Salir</button>
@@ -190,17 +212,16 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE CONTROL Y LÓGICA DE LA APLICACIÓN -->
+    <!-- SCRIPT DE CONTROL -->
     <script>
-        // ESTADO GLOBAL DE LA APLICACIÓN
         let appState = {
             currentView: 'home',
             examInProgress: false,
             folders: [
                 {
-                    id: 'f1', name: 'LEGISLACIÓN', folders: [
-                        { id: 'f2', name: 'CONSTITUCIÓN', exams: [{ id: 'e1', name: 'Test 1 - Arts 1-30', questions: [] }] },
-                        { id: 'f3', name: 'LEY 7/85', exams: [{ id: 'e2', name: 'Test 1 - Órganos de Gob', questions: [] }] }
+                    id: 'f1', name: 'BLOQUE JURÍDICO', folders: [
+                        { id: 'f2', name: 'CONSTITUCIÓN', exams: [{ id: 'e1', name: 'Test 1 - Derechos Fundamentales', questions: [] }] },
+                        { id: 'f3', name: 'PROCEDIMIENTO', exams: [{ id: 'e2', name: 'Test 1 - Fases del Procedimiento', questions: [] }] }
                     ], exams: []
                 }
             ],
@@ -208,7 +229,6 @@
             mistakes: []
         };
 
-        // GESTIÓN DE VISTAS Y NAVEGACIÓN SEGURA
         function router(viewName) {
             if (appState.examInProgress && viewName !== 'active-exam') {
                 document.getElementById('modal-exit-confirm').classList.remove('hidden');
@@ -219,13 +239,9 @@
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             appState.currentView = viewName;
 
-            // Gestionar visibilidad de flecha atrás
             const btnBack = document.getElementById('btn-back');
-            if (viewName === 'home') {
-                btnBack.classList.add('hidden');
-            } else {
-                btnBack.classList.remove('hidden');
-            }
+            if (viewName === 'home') btnBack.classList.add('hidden');
+            else btnBack.classList.remove('hidden');
 
             if (viewName === 'manage-folders') renderFoldersTree();
             if (viewName === 'exam-setup') renderExamSelectionTree();
@@ -233,11 +249,8 @@
 
         document.getElementById('btn-home').addEventListener('click', () => router('home'));
         document.getElementById('btn-back').addEventListener('click', () => {
-            if (appState.examInProgress) {
-                document.getElementById('modal-exit-confirm').classList.remove('hidden');
-            } else {
-                router('home');
-            }
+            if (appState.examInProgress) document.getElementById('modal-exit-confirm').classList.remove('hidden');
+            else router('home');
         });
 
         function confirmExitExam() {
@@ -250,13 +263,11 @@
             document.getElementById('modal-exit-confirm').classList.add('hidden');
         }
 
-        // MODO OSCURO / CLARO
         const themeToggleBtn = document.getElementById('theme-toggle');
         themeToggleBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
         });
 
-        // RENDERIZAR ÁRBOL DE CARPETAS Y TEMAS (Plegables)
         function renderFoldersTree() {
             const container = document.getElementById('folders-tree-container');
             container.innerHTML = appState.folders.map(folder => `
@@ -282,11 +293,9 @@
         }
 
         function toggleFolderCollapse(id) {
-            const el = document.getElementById(`folder-content-${id}`);
-            el.classList.toggle('hidden');
+            document.getElementById(`folder-content-${id}`).classList.toggle('hidden');
         }
 
-        // RENDERIZAR SELECCIÓN VISUAL DE EXÁMENES
         function renderExamSelectionTree() {
             const container = document.getElementById('exam-selection-tree');
             container.innerHTML = appState.folders.map(folder => `
@@ -318,60 +327,50 @@
             document.getElementById('selected-count-badge').innerText = appState.selectedExams.length;
         }
 
-        // SIMULADOR DE CARGA Y PROCESAMIENTO RÁPIDO
         function processAndSaveQuestions() {
             const spinner = document.getElementById('loading-spinner');
-            document.getElementById('loading-text').innerText = 'Analizando preguntas y formato...';
+            document.getElementById('loading-text').innerText = 'Analizando y guardando examen...';
             spinner.classList.remove('hidden');
 
             setTimeout(() => {
                 spinner.classList.add('hidden');
-                alert('Examen guardado y procesado correctamente en la carpeta.');
+                alert('¡Examen guardado correctamente!');
                 document.getElementById('import-text-input').value = '';
             }, 600);
         }
 
         function handleSkipExplanations() {
-            alert('Explicaciones omitidas. Guardando examen directamente...');
+            alert('Omitiendo explicaciones y guardando...');
             processAndSaveQuestions();
         }
 
         function startActiveExam() {
             if (appState.selectedExams.length === 0) {
-                alert('Por favor, selecciona al menos un examen para comenzar.');
+                alert('Selecciona al menos un examen para comenzar.');
                 return;
             }
             appState.examInProgress = true;
             router('active-exam');
-            document.getElementById('question-title').innerText = 'Pregunta 1: ¿Cuál es el artículo de la Constitución referido a... ?';
+            document.getElementById('question-title').innerText = 'Pregunta 1 de prueba: ¿Cuál es el concepto principal de... ?';
             document.getElementById('answers-container').innerHTML = `
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">A) Opción de respuesta primera</button>
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">B) Opción de respuesta segunda</button>
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">C) Opción de respuesta tercera</button>
-                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">D) Opción de respuesta cuarta</button>
+                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">A) Primera alternativa</button>
+                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">B) Segunda alternativa</button>
+                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">C) Tercera alternativa</button>
+                <button class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition text-sm">D) Cuarta alternativa</button>
             `;
         }
 
-        // Detectar si falta asterisco en tiempo real al escribir en el textarea de importación
         document.getElementById('import-text-input').addEventListener('input', (e) => {
             const val = e.target.value;
             const alerts = document.getElementById('import-alerts');
             const btnSkip = document.getElementById('btn-skip-exp');
             
             if (val.length > 10 && !val.includes('*')) {
-                alerts.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> No se detectan asteriscos de respuestas correctas.';
+                alerts.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> No se detectan asteriscos.';
                 btnSkip.classList.remove('hidden');
             } else {
                 alerts.innerHTML = '';
                 btnSkip.classList.add('hidden');
-            }
-        });
-
-        // ATAJOS DE TECLADO PARA PC (1-4 o A-D y Enter)
-        document.addEventListener('keydown', (e) => {
-            if (!appState.examInProgress) return;
-            if (['1', '2', '3', '4'].includes(e.key)) {
-                // Simular selección de respuesta rápida
             }
         });
     </script>
