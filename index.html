@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,12 +18,27 @@
 
 <style>
   :root {
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --card-hover: #f1f5f9;
+    --card-secondary: #e2e8f0;
+    --primary: #16a34a;
+    --primary-hover: #15803d;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --border: rgba(0, 0, 0, 0.08);
+  }
+
+  html.dark {
     --bg-color: #0b0f17;
     --card-bg: #151c2c;
     --card-hover: #1b2438;
     --card-secondary: #1e293b;
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
+    --primary: #22c55e;
+    --primary-hover: #16a34a;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --success: #10b981;
@@ -39,6 +54,7 @@
     margin: 0; padding: 0;
     display: flex; flex-direction: column; min-height: 100vh;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   header {
@@ -46,6 +62,10 @@
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  html.dark header {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
@@ -69,6 +89,10 @@
     background-color: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 16px; padding: 1.25rem; margin-bottom: 1.25rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  }
+
+  html.dark .card {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
   }
 
@@ -83,9 +107,9 @@
 
   .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
   .btn:active { transform: scale(0.98); }
-  .btn-secondary { background-color: #334155; }
-  .btn-secondary:hover { background-color: #475569; }
-  .btn-danger { background-color: var(--error); }
+  .btn-secondary { background-color: var(--card-secondary); color: var(--text-main); }
+  .btn-secondary:hover { opacity: 0.9; }
+  .btn-danger { background-color: var(--error); color: white; }
   .btn-warning { background-color: var(--warning); color: #000; }
   .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto; margin-top: 0; }
 
@@ -93,14 +117,14 @@
   @media (max-width: 600px) { .nav-grid { grid-template-columns: 1fr; } }
 
   .big-nav-btn {
-    background: linear-gradient(135deg, #151c2c, #1e293b);
+    background: var(--card-bg);
     border: 1px solid var(--border); padding: 1.75rem 1rem; border-radius: 16px;
     text-align: center; cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .big-nav-btn:hover {
     border-color: var(--primary); transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.15);
   }
   .big-nav-btn:active { transform: scale(0.98); }
   .big-nav-btn span { font-size: 2.2rem; display: block; margin-bottom: 0.5rem; }
@@ -108,27 +132,27 @@
   .stats-ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
   @media (max-width: 650px) { .stats-ranking-grid { grid-template-columns: 1fr; } }
 
-  .ranking-card { background-color: #0d131f; border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
-  .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+  .ranking-card { background-color: var(--card-secondary); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
+  .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
   .ranking-item:last-child { border-bottom: none; }
   .tag-score { padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: bold; font-size: 0.85rem; }
-  .tag-good { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-  .tag-bad { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+  .tag-good { background-color: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+  .tag-bad { background-color: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); }
 
   .option-btn {
-    background-color: #192235; border: 1px solid var(--border); color: var(--text-main);
+    background-color: var(--card-secondary); border: 1px solid var(--border); color: var(--text-main);
     text-align: left; padding: 1rem; border-radius: 12px; margin-bottom: 0.6rem;
     cursor: pointer; width: 100%; font-size: 0.95rem;
     transition: transform 0.12s ease, background-color 0.12s ease;
   }
   .option-btn:hover { background-color: var(--card-hover); }
   .option-btn:active { transform: scale(0.99); }
-  .option-btn.correct { background-color: var(--success) !important; color: white; }
-  .option-btn.incorrect { background-color: var(--error) !important; color: white; }
-  .option-btn.selected-simulacro { background-color: var(--primary) !important; color: white; }
+  .option-btn.correct { background-color: var(--success) !important; color: white !important; }
+  .option-btn.incorrect { background-color: var(--error) !important; color: white !important; }
+  .option-btn.selected-simulacro { background-color: var(--primary) !important; color: white !important; }
 
   select, input[type="text"], input[type="email"], input[type="password"], textarea {
-    width: 100%; padding: 0.75rem; background-color: #0d131f;
+    width: 100%; padding: 0.75rem; background-color: var(--card-secondary);
     border: 1px solid var(--border); color: var(--text-main);
     border-radius: 10px; box-sizing: border-box; margin-top: 0.4rem; margin-bottom: 0.75rem;
     font-family: inherit; font-size: 0.95rem;
@@ -136,21 +160,21 @@
   select:focus, input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
   textarea { resize: vertical; min-height: 90px; }
   .hidden { display: none !important; }
-  .badge { background: #1e293b; padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--border); }
+  .badge { background: var(--card-secondary); padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--border); }
   .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0; }
   .checkbox-group input { width: auto; margin: 0; }
 
-  .folder-card { border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; background-color: #0d131f; }
-  .test-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem; background-color: #151c2c; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; border: 1px solid var(--border); }
+  .folder-card { border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; background-color: var(--card-bg); }
+  .test-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem; background-color: var(--card-secondary); border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; border: 1px solid var(--border); }
 
   .editor-q-card {
-    border-left: 4px solid var(--primary); background: #0d131f;
+    border-left: 4px solid var(--primary); background: var(--card-secondary);
     padding: 1rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid var(--border);
   }
   .key-selector { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
   .key-pill {
     flex: 1; padding: 0.5rem; text-align: center;
-    background: #1e293b; border-radius: 6px; cursor: pointer; font-weight: bold; border: 1px solid var(--border);
+    background: var(--card-bg); border-radius: 6px; cursor: pointer; font-weight: bold; border: 1px solid var(--border);
   }
   .key-pill.active { background: var(--success); color: white; border-color: var(--success); }
   
@@ -162,7 +186,7 @@
 
   .alert-banner {
     background-color: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning);
-    color: #fbbf24; padding: 0.85rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.9rem;
+    color: var(--warning); padding: 0.85rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.9rem;
   }
 
   .password-field-container { position: relative; width: 100%; }
@@ -172,18 +196,36 @@
     background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 0.3rem;
   }
 
-  .tree-folder { background: #151c2c; border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; margin-bottom: 0.5rem; }
-  .tree-tests { margin-left: 1.8rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .tree-folder { background: var(--card-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; margin-bottom: 0.5rem; }
+  .tree-tests { margin-left: 1.5rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
   .tree-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <header>
-  <h2>⚡ HIITest</h2>
-  <div id="header-user-info" class="hidden" style="display:flex; align-items:center; gap:0.6rem;">
-    <span class="badge" id="user-email-badge">---</span>
-    <button class="btn btn-danger btn-sm" onclick="logoutUser()">Cerrar Sesión</button>
+  <div style="display:flex; align-items:center; gap:0.75rem;">
+    <!-- Botón de Retroceso Dinámico -->
+    <button id="btn-back" class="btn btn-secondary btn-sm hidden" onclick="goBackView()" title="Volver atrás">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <div onclick="showView('home')" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+      <div style="background:var(--primary); color:white; padding:0.4rem 0.6rem; border-radius:10px;">
+        <i class="fa-solid fa-brain text-lg"></i>
+      </div>
+      <h2 style="font-size:1.2rem;">HIITest</h2>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:0.6rem;">
+    <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" title="Cambiar Tema (Claro / Oscuro)">
+      <i class="fa-solid fa-moon dark:hidden"></i>
+      <i class="fa-solid fa-sun hidden dark:inline"></i>
+    </button>
+    <div id="header-user-info" class="hidden" style="display:flex; align-items:center; gap:0.6rem;">
+      <span class="badge" id="user-email-badge">---</span>
+      <button class="btn btn-danger btn-sm" onclick="logoutUser()">Salir</button>
+    </div>
   </div>
 </header>
 
@@ -191,17 +233,22 @@
 
   <!-- ==================== VISTA LOGIN ==================== -->
   <div id="view-login">
-    <div class="card" style="max-width:420px; margin: 3rem auto;">
-      <h2 style="text-align:center; margin-bottom:0.5rem; font-size:1.8rem;">⚡ HIITest</h2>
-      <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Plataforma de Entrenamiento y Simulacros de Test</p>
+    <div class="card" style="max-width:420px; margin: 3rem auto; text-align:center;">
+      <div style="background:var(--primary); color:white; width:64px; height:64px; border-radius:20px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; box-shadow:0 10px 20px rgba(22,163,74,0.3);">
+        <i class="fa-solid fa-brain text-3xl"></i>
+      </div>
+      <h2 style="margin-bottom:0.3rem; font-size:1.8rem;">HIITest</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Plataforma de Entrenamiento y Simulacros de Test</p>
       
-      <label><b>Correo Electrónico:</b></label>
-      <input type="email" id="login-email" placeholder="tu_email@ejemplo.com" autocomplete="email">
+      <div style="text-align:left;">
+        <label><b>Correo Electrónico:</b></label>
+        <input type="email" id="login-email" placeholder="tu_email@ejemplo.com" autocomplete="email">
 
-      <label><b>Contraseña:</b></label>
-      <div class="password-field-container">
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
-        <button class="toggle-password-btn" type="button" onclick="togglePasswordVisibility('login-password', this)">👁️</button>
+        <label><b>Contraseña:</b></label>
+        <div class="password-field-container">
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+          <button class="toggle-password-btn" type="button" onclick="togglePasswordVisibility('login-password', this)">👁️</button>
+        </div>
       </div>
 
       <button class="btn" onclick="loginUser()">Entrar a mi Cuenta</button>
@@ -213,7 +260,7 @@
   <!-- ==================== VISTA REGISTRO ==================== -->
   <div id="view-register" class="hidden">
     <div class="card" style="max-width:420px; margin: 3rem auto;">
-      <h2 style="text-align:center; margin-bottom:0.5rem; font-size:1.8rem;">⚡ Crear Cuenta</h2>
+      <h2 style="text-align:center; margin-bottom:1.5rem; font-size:1.8rem;">⚡ Crear Cuenta</h2>
       
       <label><b>Correo Electrónico:</b></label>
       <input type="email" id="reg-email" placeholder="tu_email@ejemplo.com" autocomplete="email">
@@ -239,36 +286,48 @@
   <!-- ==================== VISTA PRINCIPAL (DASHBOARD) ==================== -->
   <div id="view-home" class="hidden">
 
-    <!-- Tarjeta de Bienvenida Actualizada (Sin encasillar en opositor) -->
-    <div class="card" style="background: linear-gradient(135deg, #151c2c, #1d4ed8); border: 1px solid rgba(37, 99, 235, 0.4);">
+    <!-- Tarjeta de Bienvenida -->
+    <div class="card" style="background: linear-gradient(135deg, var(--card-bg), var(--primary)); border: 1px solid rgba(22, 163, 74, 0.3);">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
         <div>
           <h2 style="font-size:1.6rem; margin-bottom:0.3rem;">🚀 ¡A por todas con tu estudio!</h2>
-          <p style="color:#bfdbfe; font-size:0.95rem; margin:0;">Plataforma avanzada de test, simulacros y memorización inteligente.</p>
+          <p style="color:var(--text-muted); font-size:0.95rem; margin:0;">Plataforma avanzada de test, simulacros y memorización inteligente.</p>
         </div>
-        <button class="btn" style="background:white; color:#1d4ed8; width:auto; padding:0.75rem 1.5rem;" onclick="showView('select-test-launcher')">
+        <button class="btn" style="background:white; color:var(--text-main); width:auto; padding:0.75rem 1.5rem;" onclick="showView('select-test-launcher')">
           <i class="fa-solid fa-play"></i> Empezar Test
         </button>
       </div>
     </div>
 
-    <!-- Cuadro de Mandos con Estadísticas Avanzadas -->
+    <!-- Cuadro de Mandos con Estadísticas Avanzadas Visuales -->
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
         <h3>📊 Cuadro de Mandos & Estadísticas</h3>
         <span class="badge" id="stats-total-questions">0 Preguntas en historial</span>
       </div>
 
+      <!-- Sección Visual de Gráficos de Rendimiento -->
+      <div id="stats-visual-container" style="margin-bottom:1rem; background:var(--card-secondary); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+        <p style="font-size:0.9rem; font-weight:bold; margin-bottom:0.5rem;">📈 Resumen Global de Aciertos</p>
+        <div style="background:var(--card-bg); border-radius:8px; height:16px; width:100%; overflow:hidden; border:1px solid var(--border);">
+          <div id="stats-progress-bar" style="background:var(--success); height:100%; width:0%; transition: width 0.4s ease;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem;">
+          <span id="stats-ratio-text">Ratio de acierto: 0%</span>
+          <span id="stats-breakdown-text">0 aciertos / 0 fallos</span>
+        </div>
+      </div>
+
       <div class="stats-ranking-grid">
         <div class="ranking-card">
-          <h4 style="color:#34d399; margin-bottom:0.75rem;">🟢 Temas que Mejor Llevo</h4>
+          <h4 style="color:var(--success); margin-bottom:0.75rem;">🟢 Temas que Mejor Llevo</h4>
           <div id="ranking-best-list">
             <p style="color:var(--text-muted); font-size:0.85rem;">Haz test para registrar datos</p>
           </div>
         </div>
 
         <div class="ranking-card">
-          <h4 style="color:#f87171; margin-bottom:0.75rem;">🔴 Temas que Peor Llevo</h4>
+          <h4 style="color:var(--error); margin-bottom:0.75rem;">🔴 Temas que Peor Llevo</h4>
           <div id="ranking-worst-list">
             <p style="color:var(--text-muted); font-size:0.85rem;">Haz test para registrar datos</p>
           </div>
@@ -305,7 +364,7 @@
 
   </div>
 
-  <!-- ==================== VISTA MIS EXÁMENES (GESTOR + BUSCADOR) ==================== -->
+  <!-- ==================== VISTA MIS EXÁMENES (GESTOR + CARPETAS COLAPSABLES) ==================== -->
   <div id="view-my-exams" class="hidden">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
       <h2>📁 Gestor de Exámenes</h2>
@@ -315,7 +374,7 @@
       </div>
     </div>
 
-    <!-- Buscador Rápido de Preguntas / Exámenes -->
+    <!-- Buscador Rápido -->
     <div class="card" style="padding:0.85rem 1.25rem;">
       <div style="display:flex; align-items:center; gap:0.5rem;">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted)"></i>
@@ -331,18 +390,19 @@
       </div>
     </div>
 
+    <!-- Las carpetas empiezan colapsadas para evitar scroll infinito -->
     <div id="folders-container"></div>
   </div>
 
-  <!-- ==================== VISTA LANZADOR DE EXAMEN ==================== -->
+  <!-- ==================== VISTA LANZADOR DE EXAMEN (CARPETAS COLAPSABLES) ==================== -->
   <div id="view-select-test-launcher" class="hidden">
     <div class="card">
       <h3>🚀 Seleccionar Exámenes para Empezar</h3>
       <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
-        Selecciona uno o varios exámenes para combinarlos en un simulacro mixto.
+        Haz clic en una carpeta para desplegarla y seleccionar los exámenes.
       </p>
       
-      <div id="launcher-tree" style="background:#0d131f; padding:1rem; border:1px solid var(--border); border-radius:10px; max-height:400px; overflow-y:auto; margin-bottom:1rem;"></div>
+      <div id="launcher-tree" style="background:var(--card-secondary); padding:1rem; border:1px solid var(--border); border-radius:10px; max-height:400px; overflow-y:auto; margin-bottom:1rem;"></div>
 
       <button class="btn" onclick="proceedToConfigFromLauncher()">Siguiente: Configurar Test ➔</button>
       <button class="btn btn-secondary" onclick="showView('home')">Cancelar</button>
@@ -369,7 +429,7 @@
         <button class="btn btn-secondary btn-sm" onclick="showView('my-exams')">Volver</button>
       </div>
       
-      <div style="background:#0d131f; border:1px solid var(--border); padding:1rem; border-radius:10px; margin-bottom:1rem;">
+      <div style="background:var(--card-secondary); border:1px solid var(--border); padding:1rem; border-radius:10px; margin-bottom:1rem;">
         <label><b>📂 Subir archivo de texto o Word:</b></label>
         <input type="file" id="nt-file-upload" accept=".txt,.docx" onchange="handleTextFileUpload(event)" style="margin-top:0.5rem; margin-bottom:0; background:transparent; border:none; padding:0;">
       </div>
@@ -388,7 +448,7 @@
 
     <div id="nt-editor-panel" class="card hidden">
       <div id="nt-status-banner"></div>
-      <div id="nt-template-box" class="hidden" style="background:#0d131f; padding:1rem; border-radius:10px; margin-bottom:1rem; border:1px solid var(--border);">
+      <div id="nt-template-box" class="hidden" style="background:var(--card-secondary); padding:1rem; border-radius:10px; margin-bottom:1rem; border:1px solid var(--border);">
         <label><b>📋 Plantilla de respuestas (opcional):</b></label>
         <textarea id="nt-template-input" style="min-height:60px;" placeholder="Ej: 1A, 2C, 3B..."></textarea>
         <button class="btn btn-secondary btn-sm" onclick="applyAnswerTemplate()">⚡ Aplicar Plantilla</button>
@@ -520,11 +580,13 @@ let currentSession = {
   sessionMode: 'study', hits: 0, misses: 0, userAnswers: {}
 };
 let tempParsedQuestions = [];
-let showExplanationInputsInParser = false;
 let editingTarget = { fId: null, tId: null };
 let activeTargets = [];
 let timerInterval = null;
 let timeRemaining = 0;
+
+// Historial de navegación para la flecha atrás
+let viewHistory = ['home'];
 
 function togglePasswordVisibility(inputId, btnEl) {
   const input = document.getElementById(inputId);
@@ -537,6 +599,17 @@ function togglePasswordVisibility(inputId, btnEl) {
   }
 }
 
+function toggleTheme() {
+  const htmlEl = document.documentElement;
+  if(htmlEl.classList.contains('dark')) {
+    htmlEl.classList.remove('dark');
+    htmlEl.classList.add('light');
+  } else {
+    htmlEl.classList.remove('light');
+    htmlEl.classList.add('dark');
+  }
+}
+
 // MONITOR DE AUTENTICACIÓN
 auth.onAuthStateChanged(async (user) => {
   if (user) {
@@ -544,11 +617,11 @@ auth.onAuthStateChanged(async (user) => {
     document.getElementById('user-email-badge').innerText = user.email;
     document.getElementById('header-user-info').classList.remove('hidden');
     await loadUserDataFromCloud();
-    showView('home');
+    showView('home', false);
   } else {
     currentUser = null;
     document.getElementById('header-user-info').classList.add('hidden');
-    showView('login');
+    showView('login', false);
   }
 });
 
@@ -599,10 +672,25 @@ async function loadUserDataFromCloud() {
   } catch (e) { console.error('Error al cargar datos:', e); }
 }
 
-function showView(viewId) {
+function showView(viewId, pushHistory = true) {
   clearInterval(timerInterval);
   document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
   document.getElementById('view-' + viewId).classList.remove('hidden');
+  
+  if (pushHistory) {
+    if (viewHistory[viewHistory.length - 1] !== viewId) {
+      viewHistory.push(viewId);
+    }
+  } else {
+    viewHistory = [viewId];
+  }
+
+  const btnBack = document.getElementById('btn-back');
+  if (viewHistory.length > 1 && viewId !== 'home' && viewId !== 'login') {
+    btnBack.classList.remove('hidden');
+  } else {
+    btnBack.classList.add('hidden');
+  }
   
   if(viewId === 'home') renderHomeDashboard();
   if(viewId === 'my-exams') renderMyExams();
@@ -610,10 +698,34 @@ function showView(viewId) {
   if(viewId === 'no-template') prepareNoTemplateView();
 }
 
-// DASHBOARD CON ESTADÍSTICAS AVANZADAS
+function goBackView() {
+  if (viewHistory.length > 1) {
+    viewHistory.pop(); // quitar actual
+    const prev = viewHistory[viewHistory.length - 1];
+    showView(prev, false);
+  } else {
+    showView('home', false);
+  }
+}
+
+// DASHBOARD CON ESTADÍSTICAS AVANZADAS Y GRÁFICOS VISUALES
 function renderHomeDashboard() {
   let totalQuestionsSeen = Object.keys(db.stats || {}).length;
   document.getElementById('stats-total-questions').innerText = `${totalQuestionsSeen} Preguntas en Historial`;
+
+  let totalHits = 0, totalMisses = 0;
+  Object.keys(db.stats || {}).forEach(qKey => {
+    const st = db.stats[qKey];
+    totalHits += st.hits || 0;
+    totalMisses += st.misses || 0;
+  });
+
+  const totalAttempted = totalHits + totalMisses;
+  const globalRatio = totalAttempted > 0 ? ((totalHits / totalAttempted) * 100).toFixed(1) : 0;
+  
+  document.getElementById('stats-progress-bar').style.width = `${globalRatio}%`;
+  document.getElementById('stats-ratio-text').innerText = `Ratio de acierto global: ${globalRatio}%`;
+  document.getElementById('stats-breakdown-text').innerText = `${totalHits} aciertos / ${totalMisses} fallos (${totalAttempted} resueltas)`;
 
   const folderStats = [];
   Object.keys(db.folders || {}).forEach(fId => {
@@ -641,7 +753,7 @@ function renderHomeDashboard() {
     bestList.map(f => `<div class="ranking-item"><span>📁 <b>${f.name}</b></span><span class="tag-score tag-good">${f.ratio}% Acierto</span></div>`).join('');
 }
 
-// GESTOR DE EXÁMENES
+// GESTOR DE EXÁMENES (CON CARPETAS OCULTAS/COLAPSADAS POR DEFECTO)
 function renderMyExams(filterText = '') {
   const container = document.getElementById('folders-container');
   container.innerHTML = '';
@@ -658,7 +770,6 @@ function renderMyExams(filterText = '') {
     const folder = db.folders[fId];
     const testKeys = Object.keys(folder.tests || {});
     
-    // Filtrar tests si hay texto de búsqueda
     const matchingTests = testKeys.filter(tId => {
       const test = folder.tests[tId];
       if(!filterText) return true;
@@ -678,21 +789,27 @@ function renderMyExams(filterText = '') {
     });
     const avgScoreText = scoredCount > 0 ? (scoreSum / scoredCount).toFixed(2) + ' / 10' : 'Sin realizar';
 
+    // Las carpetas por defecto se muestran colapsadas (tests ocultos) para evitar scroll infinito
     let html = `
       <div class="folder-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-          <div>
-            <h3 style="font-size:1.2rem; color:#f3f4f6;">📁 ${folder.name}</h3>
-            <span class="badge" style="margin-top:0.3rem;">Nota Media: <b>${avgScoreText}</b></span>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; cursor:pointer;" onclick="toggleFolderCollapse('${fId}')">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-chevron-right" id="icon_col_${fId}" style="transition:transform 0.2s;"></i>
+            <h3 style="font-size:1.2rem;">📁 ${folder.name}</h3>
+            <span class="badge">Nota Media: <b>${avgScoreText}</b></span>
+            <span class="badge" style="font-size:0.75rem; color:var(--text-muted);">${testKeys.length} exámenes</span>
           </div>
-          <button class="btn btn-danger btn-sm" onclick="deleteFolder('${fId}')">Eliminar Carpeta</button>
+          <div style="display:flex; gap:0.4rem;" onclick="event.stopPropagation()">
+            <button class="btn btn-danger btn-sm" onclick="deleteFolder('${fId}')">Eliminar Carpeta</button>
+          </div>
         </div>
-        <div>
+
+        <div id="folder_content_${fId}" class="hidden" style="margin-top:1rem; border-top:1px solid var(--border); padding-top:0.75rem;">
     `;
 
     const testsToRender = filterText ? matchingTests : testKeys;
     if(testsToRender.length === 0) {
-      html += `<p style="font-size:0.85rem; color:var(--text-muted);">Sin exámenes coincidentes.</p>`;
+      html += `<p style="font-size:0.85rem; color:var(--text-muted);">Sin exámenes en esta carpeta.</p>`;
     } else {
       testsToRender.forEach(tId => {
         const test = folder.tests[tId];
@@ -706,7 +823,7 @@ function renderMyExams(filterText = '') {
                 ${test.questions.length} preg. | Nota: <b style="color:var(--text-main);">${lastScoreDisplay}</b>
               </div>
             </div>
-            <div style="display:flex; gap:0.4rem;">
+            <div style="display:flex; gap:0.4rem;" onclick="event.stopPropagation()">
               <button class="btn btn-sm" onclick="openConfig([{fId: '${fId}', tId: '${tId}'}])">🚀 Hacer Test</button>
               <button class="btn btn-secondary btn-sm" onclick="openExamEditor('${fId}', '${tId}')">✏️ Editar</button>
               <button class="btn btn-danger btn-sm" onclick="deleteTest('${fId}', '${tId}')">✕</button>
@@ -717,7 +834,7 @@ function renderMyExams(filterText = '') {
     }
 
     html += `
-        <div style="margin-top:0.75rem;">
+        <div style="margin-top:0.75rem;" onclick="event.stopPropagation()">
           <input type="file" id="up_${fId}" class="hidden" accept=".json" onchange="uploadTest('${fId}', event)">
           <button class="btn btn-secondary btn-sm" onclick="document.getElementById('up_${fId}').click()">➕ Cargar JSON</button>
         </div>
@@ -728,6 +845,18 @@ function renderMyExams(filterText = '') {
 
   if(!hasVisibleContent) {
     container.innerHTML = `<div class="card"><p style="color:var(--text-muted); text-align:center;">No se encontraron resultados para "${filterText}".</p></div>`;
+  }
+}
+
+function toggleFolderCollapse(fId) {
+  const content = document.getElementById(`folder_content_${fId}`);
+  const icon = document.getElementById(`icon_col_${fId}`);
+  if(content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    icon.style.transform = 'rotate(90deg)';
+  } else {
+    content.classList.add('hidden');
+    icon.style.transform = 'rotate(0deg)';
   }
 }
 
@@ -822,7 +951,7 @@ function saveExamEdits() {
   saveDB(); alert('¡Cambios guardados!'); showView('my-exams');
 }
 
-// LANZADOR DE TEST
+// LANZADOR DE TEST (CON CARPETAS COLAPSABLES)
 function prepareTestLauncher() {
   const container = document.getElementById('launcher-tree');
   container.innerHTML = '';
@@ -841,10 +970,14 @@ function prepareTestLauncher() {
       hasTests = true;
       let html = `
         <div class="tree-folder">
-          <label class="tree-label" style="font-weight:bold; color:var(--primary);">
-            <input type="checkbox" onchange="toggleFolderCheckboxes('${fId}', this.checked)"> 📁 ${folder.name}
-          </label>
-          <div class="tree-tests" id="folder_tests_${fId}">
+          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleLauncherFolder('${fId}')">
+            <label class="tree-label" style="font-weight:bold; color:var(--primary); margin:0;">
+              <i class="fa-solid fa-chevron-right" id="launcher_icon_${fId}" style="transition:transform 0.2s; font-size:0.8rem;"></i> 
+              <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleFolderCheckboxes('${fId}', this.checked)"> 📁 ${folder.name}
+            </label>
+            <span style="font-size:0.8rem; color:var(--text-muted);">${tKeys.length} exámenes</span>
+          </div>
+          <div class="tree-tests hidden" id="launcher_tests_${fId}">
       `;
       tKeys.forEach(tId => {
         const test = folder.tests[tId];
@@ -862,8 +995,20 @@ function prepareTestLauncher() {
   if(!hasTests) container.innerHTML = '<p style="color:var(--text-muted)">Aún no tienes exámenes guardados.</p>';
 }
 
+function toggleLauncherFolder(fId) {
+  const container = document.getElementById(`launcher_tests_${fId}`);
+  const icon = document.getElementById(`launcher_icon_${fId}`);
+  if(container.classList.contains('hidden')) {
+    container.classList.remove('hidden');
+    icon.style.transform = 'rotate(90deg)';
+  } else {
+    container.classList.add('hidden');
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+
 function toggleFolderCheckboxes(fId, isChecked) {
-  const container = document.getElementById(`folder_tests_${fId}`);
+  const container = document.getElementById(`launcher_tests_${fId}`);
   if(container) container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
 }
 
@@ -1162,7 +1307,7 @@ function parseRawText() {
   const statusBanner = document.getElementById('nt-status-banner');
   const templateBox = document.getElementById('nt-template-box');
   if(hasAsterisks) {
-    statusBanner.innerHTML = `<div class="alert-banner" style="background:rgba(16,185,129,0.15); border-color:var(--success); color:#34d399;">✨ Respuestas detectadas por asterisco (*).</div>`;
+    statusBanner.innerHTML = `<div class="alert-banner" style="background:rgba(16,185,129,0.15); border-color:var(--success); color:var(--success);">✨ Respuestas detectadas por asterisco (*).</div>`;
     templateBox.classList.add('hidden');
   } else {
     statusBanner.innerHTML = `<div class="alert-banner">⚠️ Selecciona las correctas o aplica plantilla.</div>`;
@@ -1236,4 +1381,3 @@ function importData(event) {
 </script>
 </body>
 </html>
-```[cite: 4]
