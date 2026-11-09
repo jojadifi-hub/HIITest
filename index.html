@@ -1,680 +1,1239 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIITest - Sistema de Test Inteligentes</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: { brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' } }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- SDKs de Firebase cargados mediante jsDelivr -->
-    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-firestore.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIITest - Sistema de Test Inteligentes</title>
+
+<!-- Tipografía Profesional Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- FontAwesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- SDKs de Firebase y Librerías (v9 Compat y Mammoth para Word) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+
+<style>
+  :root {
+    --bg-color: #0b0f17;
+    --card-bg: #151c2c;
+    --card-hover: #1b2438;
+    --card-secondary: #1e293b;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --border: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  header {
+    background-color: var(--card-bg);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.02em; }
+
+  .container {
+    padding: 1.25rem; max-width: 900px; margin: 0 auto; width: 100%;
+    box-sizing: border-box; flex: 1;
+  }
+
+  .container > div:not(.hidden) {
+    animation: fadeIn 0.22s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.25rem; margin-bottom: 1.25rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn {
+    background-color: var(--primary); color: white; border: none;
+    padding: 0.85rem 1.25rem; border-radius: 10px; font-weight: 600;
+    cursor: pointer; width: 100%; margin-top: 0.5rem;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+  .btn:active { transform: scale(0.98); }
+  .btn-secondary { background-color: #334155; }
+  .btn-secondary:hover { background-color: #475569; }
+  .btn-danger { background-color: var(--error); }
+  .btn-warning { background-color: var(--warning); color: #000; }
+  .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto; margin-top: 0; }
+
+  .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  @media (max-width: 600px) { .nav-grid { grid-template-columns: 1fr; } }
+
+  .big-nav-btn {
+    background: linear-gradient(135deg, #151c2c, #1e293b);
+    border: 1px solid var(--border); padding: 1.75rem 1rem; border-radius: 16px;
+    text-align: center; cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .big-nav-btn:hover {
+    border-color: var(--primary); transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+  }
+  .big-nav-btn:active { transform: scale(0.98); }
+  .big-nav-btn span { font-size: 2.2rem; display: block; margin-bottom: 0.5rem; }
+
+  .stats-ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+  @media (max-width: 650px) { .stats-ranking-grid { grid-template-columns: 1fr; } }
+
+  .ranking-card { background-color: #0d131f; border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
+  .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+  .ranking-item:last-child { border-bottom: none; }
+  .tag-score { padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: bold; font-size: 0.85rem; }
+  .tag-good { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+  .tag-bad { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+  .option-btn {
+    background-color: #192235; border: 1px solid var(--border); color: var(--text-main);
+    text-align: left; padding: 1rem; border-radius: 12px; margin-bottom: 0.6rem;
+    cursor: pointer; width: 100%; font-size: 0.95rem;
+    transition: transform 0.12s ease, background-color 0.12s ease;
+  }
+  .option-btn:hover { background-color: var(--card-hover); }
+  .option-btn:active { transform: scale(0.99); }
+  .option-btn.correct { background-color: var(--success) !important; color: white; }
+  .option-btn.incorrect { background-color: var(--error) !important; color: white; }
+  .option-btn.selected-simulacro { background-color: var(--primary) !important; color: white; }
+
+  select, input[type="text"], input[type="email"], input[type="password"], textarea {
+    width: 100%; padding: 0.75rem; background-color: #0d131f;
+    border: 1px solid var(--border); color: var(--text-main);
+    border-radius: 10px; box-sizing: border-box; margin-top: 0.4rem; margin-bottom: 0.75rem;
+    font-family: inherit; font-size: 0.95rem;
+  }
+  select:focus, input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
+  textarea { resize: vertical; min-height: 90px; }
+  .hidden { display: none !important; }
+  .badge { background: #1e293b; padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--border); }
+  .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0; }
+  .checkbox-group input { width: auto; margin: 0; }
+
+  .folder-card { border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; background-color: #0d131f; }
+  .test-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem; background-color: #151c2c; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; border: 1px solid var(--border); }
+
+  .editor-q-card {
+    border-left: 4px solid var(--primary); background: #0d131f;
+    padding: 1rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid var(--border);
+  }
+  .key-selector { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  .key-pill {
+    flex: 1; padding: 0.5rem; text-align: center;
+    background: #1e293b; border-radius: 6px; cursor: pointer; font-weight: bold; border: 1px solid var(--border);
+  }
+  .key-pill.active { background: var(--success); color: white; border-color: var(--success); }
+  
+  .auth-link {
+    display: block; text-align: center; margin-top: 1rem; color: var(--primary);
+    text-decoration: none; font-size: 0.9rem; cursor: pointer; font-weight: 500;
+  }
+  .auth-link:hover { text-decoration: underline; }
+
+  .alert-banner {
+    background-color: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning);
+    color: #fbbf24; padding: 0.85rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.9rem;
+  }
+
+  .password-field-container { position: relative; width: 100%; }
+  .password-field-container input { padding-right: 2.75rem; }
+  .toggle-password-btn {
+    position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 0.3rem;
+  }
+
+  .tree-folder { background: #151c2c; border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; margin-bottom: 0.5rem; }
+  .tree-tests { margin-left: 1.8rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .tree-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+</style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+<body>
 
-    <!-- CABECERA PRINCIPAL -->
-    <header id="main-header" class="hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
-        <div class="flex items-center space-x-3">
-            <button id="btn-back" class="hidden text-slate-600 dark:text-slate-300 hover:text-brand-600 p-2 rounded-lg transition" title="Volver atrás">
-                <i class="fa-solid fa-arrow-left text-lg"></i>
-            </button>
-            <div id="btn-home" class="flex items-center space-x-2 cursor-pointer group">
-                <div class="bg-brand-600 text-white p-2 rounded-xl group-hover:bg-brand-700 transition shadow-md">
-                    <i class="fa-solid fa-brain text-xl"></i>
-                </div>
-                <span class="font-bold text-lg tracking-tight">HIITest</span>
-            </div>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="openSettings()" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Configuración">
-                <i class="fa-solid fa-gear text-lg"></i>
-            </button>
-            <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Cambiar tema">
-                <i class="fa-solid fa-moon dark:hidden"></i>
-                <i class="fa-solid fa-sun hidden dark:inline"></i>
-            </button>
-        </div>
-    </header>
+<header>
+  <h2>⚡ HIITest</h2>
+  <div id="header-user-info" class="hidden" style="display:flex; align-items:center; gap:0.6rem;">
+    <span class="badge" id="user-email-badge">---</span>
+    <button class="btn btn-danger btn-sm" onclick="logoutUser()">Cerrar Sesión</button>
+  </div>
+</header>
 
-    <!-- INDICADOR DE CARGA GLOBAL -->
-    <div id="loading-spinner" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center space-y-4">
-            <div class="animate-spin rounded-full h-10 w-10 border-4 border-brand-500 border-t-transparent"></div>
-            <span id="loading-text" class="font-bold text-sm text-brand-600">Sincronizando...</span>
+<div class="container">
+
+  <!-- ==================== VISTA LOGIN ==================== -->
+  <div id="view-login">
+    <div class="card" style="max-width:420px; margin: 3rem auto;">
+      <h2 style="text-align:center; margin-bottom:0.5rem; font-size:1.8rem;">⚡ HIITest</h2>
+      <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Plataforma de Entrenamiento y Simulacros de Test</p>
+      
+      <label><b>Correo Electrónico:</b></label>
+      <input type="email" id="login-email" placeholder="tu_email@ejemplo.com" autocomplete="email">
+
+      <label><b>Contraseña:</b></label>
+      <div class="password-field-container">
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        <button class="toggle-password-btn" type="button" onclick="togglePasswordVisibility('login-password', this)">👁️</button>
+      </div>
+
+      <button class="btn" onclick="loginUser()">Entrar a mi Cuenta</button>
+      <p id="login-error" style="color:var(--error); font-size:0.85rem; text-align:center; margin-top:0.75rem;"></p>
+      <span class="auth-link" onclick="showView('register')">¿No tienes cuenta? Crear una cuenta nueva</span>
+    </div>
+  </div>
+
+  <!-- ==================== VISTA REGISTRO ==================== -->
+  <div id="view-register" class="hidden">
+    <div class="card" style="max-width:420px; margin: 3rem auto;">
+      <h2 style="text-align:center; margin-bottom:0.5rem; font-size:1.8rem;">⚡ Crear Cuenta</h2>
+      
+      <label><b>Correo Electrónico:</b></label>
+      <input type="email" id="reg-email" placeholder="tu_email@ejemplo.com" autocomplete="email">
+
+      <label><b>Contraseña:</b></label>
+      <div class="password-field-container">
+        <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+        <button class="toggle-password-btn" type="button" onclick="togglePasswordVisibility('reg-password', this)">👁️</button>
+      </div>
+
+      <label><b>Repetir Contraseña:</b></label>
+      <div class="password-field-container">
+        <input type="password" id="reg-password-confirm" placeholder="••••••••" autocomplete="new-password">
+        <button class="toggle-password-btn" type="button" onclick="togglePasswordVisibility('reg-password-confirm', this)">👁️</button>
+      </div>
+
+      <button class="btn btn-warning" onclick="registerUser()">Registrar Cuenta</button>
+      <p id="reg-error" style="color:var(--error); font-size:0.85rem; text-align:center; margin-top:0.75rem;"></p>
+      <span class="auth-link" onclick="showView('login')">← Volver a Iniciar Sesión</span>
+    </div>
+  </div>
+
+  <!-- ==================== VISTA PRINCIPAL (DASHBOARD) ==================== -->
+  <div id="view-home" class="hidden">
+
+    <!-- Tarjeta de Bienvenida Actualizada (Sin encasillar en opositor) -->
+    <div class="card" style="background: linear-gradient(135deg, #151c2c, #1d4ed8); border: 1px solid rgba(37, 99, 235, 0.4);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 style="font-size:1.6rem; margin-bottom:0.3rem;">🚀 ¡A por todas con tu estudio!</h2>
+          <p style="color:#bfdbfe; font-size:0.95rem; margin:0;">Plataforma avanzada de test, simulacros y memorización inteligente.</p>
         </div>
+        <button class="btn" style="background:white; color:#1d4ed8; width:auto; padding:0.75rem 1.5rem;" onclick="showView('select-test-launcher')">
+          <i class="fa-solid fa-play"></i> Empezar Test
+        </button>
+      </div>
     </div>
 
-    <!-- CONTENEDOR DE VISTAS -->
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 space-y-6" id="main-container">
-        
-        <!-- VISTA 0: LOGIN / REGISTRO -->
-        <div id="view-login" class="flex flex-col items-center justify-center min-h-[70vh] space-y-6">
-            <div class="bg-brand-600 text-white p-4 rounded-3xl shadow-lg mb-4">
-                <i class="fa-solid fa-brain text-5xl"></i>
-            </div>
-            <h1 class="text-3xl font-extrabold">HIITest</h1>
-            <p class="text-slate-500 text-sm">Entrenamiento Inteligente</p>
-            
-            <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl w-full max-w-md space-y-4">
-                <div id="auth-error" class="hidden text-xs text-rose-500 bg-rose-50 dark:bg-rose-900/30 p-3 rounded-lg font-bold"></div>
-                <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                <input type="password" id="auth-pass" placeholder="Contraseña" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                
-                <div class="pt-2 flex flex-col gap-3">
-                    <button onclick="handleLogin()" class="w-full bg-brand-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-brand-700 transition">Iniciar Sesión</button>
-                    <button onclick="handleRegister()" class="w-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition">Crear Cuenta Nueva</button>
-                </div>
-            </div>
+    <!-- Cuadro de Mandos con Estadísticas Avanzadas -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+        <h3>📊 Cuadro de Mandos & Estadísticas</h3>
+        <span class="badge" id="stats-total-questions">0 Preguntas en historial</span>
+      </div>
+
+      <div class="stats-ranking-grid">
+        <div class="ranking-card">
+          <h4 style="color:#34d399; margin-bottom:0.75rem;">🟢 Temas que Mejor Llevo</h4>
+          <div id="ranking-best-list">
+            <p style="color:var(--text-muted); font-size:0.85rem;">Haz test para registrar datos</p>
+          </div>
         </div>
 
-        <!-- VISTA 1: INICIO (DASHBOARD) -->
-        <div id="view-home" class="hidden space-y-6">
-            <div class="bg-gradient-to-r from-brand-600 to-emerald-700 text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="space-y-2">
-                    <h1 class="text-2xl md:text-3xl font-extrabold">¡Hola, Opositor!</h1>
-                    <p class="text-emerald-100 text-sm">Plataforma avanzada de test y simulación.</p>
-                </div>
-                <button onclick="router('exam-setup')" class="w-full md:w-auto bg-white text-brand-600 font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:bg-emerald-50 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-play"></i> Configurar Test
-                </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div onclick="router('manage-folders')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
-                    <div class="flex items-center justify-between text-brand-600 dark:text-brand-400">
-                        <i class="fa-solid fa-folder-tree text-3xl"></i>
-                        <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
-                    </div>
-                    <div class="space-y-1">
-                        <h3 class="font-bold text-xl">Gestionar Temas</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">Crea carpetas y añade aquí tus exámenes y baterías de preguntas.</p>
-                    </div>
-                </div>
-                <div onclick="router('statistics')" class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition cursor-pointer flex flex-col justify-between space-y-4">
-                    <div class="flex items-center justify-between text-indigo-500">
-                        <i class="fa-solid fa-chart-pie text-3xl"></i>
-                        <i class="fa-solid fa-arrow-right text-sm text-slate-400"></i>
-                    </div>
-                    <div class="space-y-1">
-                        <h3 class="font-bold text-xl">Tus Estadísticas</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">Analiza qué temas llevas mejor y cuáles necesitas reforzar más.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="ranking-card">
+          <h4 style="color:#f87171; margin-bottom:0.75rem;">🔴 Temas que Peor Llevo</h4>
+          <div id="ranking-worst-list">
+            <p style="color:var(--text-muted); font-size:0.85rem;">Haz test para registrar datos</p>
+          </div>
         </div>
-
-        <!-- VISTA 2: GESTIÓN DE CARPETAS Y TEMAS -->
-        <div id="view-manage-folders" class="hidden space-y-6">
-            <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-folder-tree text-brand-600"></i> Tus Temarios</h2>
-            </div>
-
-            <!-- CONTENEDOR DEL ÁRBOL O ESTADO VACÍO -->
-            <div id="folders-tree-container" class="space-y-3 min-h-[200px]"></div>
-
-            <!-- ZONA DE IMPORTACIÓN DE EXÁMENES -->
-            <div id="import-section" class="hidden bg-white dark:bg-slate-800 p-6 rounded-3xl border border-brand-200 dark:border-brand-900/50 shadow-md space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
-                    <h3 class="font-bold text-lg text-brand-600">Añadir Examen en: <span id="target-folder-name" class="text-slate-800 dark:text-white"></span></h3>
-                    <button onclick="cancelImport()" class="text-slate-400 hover:text-rose-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                
-                <input type="text" id="new-exam-name" placeholder="Título del examen (Ej: Test Tema 1)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-500">
-
-                <textarea id="import-text-input" rows="6" placeholder="Pega el contenido del examen aquí..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
-                
-                <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-                    <div id="import-alerts" class="text-xs font-medium text-amber-600"></div>
-                    <div class="flex gap-2">
-                        <label class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-200 transition flex items-center gap-2">
-                            <i class="fa-solid fa-file-arrow-up"></i> Subir .txt / Word
-                            <input type="file" id="file-upload" accept=".txt,.doc,.docx" class="hidden" onchange="handleFileUpload(event)">
-                        </label>
-                        <button onclick="saveExam()" class="bg-brand-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VISTA 3: CONFIGURAR SIMULACRO -->
-        <div id="view-exam-setup" class="hidden space-y-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-600"></i> Configurar Simulacro</h2>
-                    <p class="text-xs text-slate-500 mt-1">Selecciona los temas a practicar o repasa tus fallos.</p>
-                </div>
-                <button class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 px-5 py-2.5 rounded-2xl font-bold text-sm hover:bg-amber-200 transition flex items-center gap-2">
-                    <i class="fa-solid fa-rotate-left"></i> Modo Fallos
-                </button>
-            </div>
-            <div id="exam-selection-tree" class="space-y-3 bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[150px]"></div>
-            
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex justify-between items-center">
-                <div class="text-sm font-semibold">Exámenes: <span id="selected-count-badge" class="text-brand-600 ml-1">0</span></div>
-                <button onclick="startActiveExam()" class="bg-brand-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg hover:bg-brand-700 transition">
-                    <i class="fa-solid fa-play"></i> Comenzar
-                </button>
-            </div>
-        </div>
-
-        <!-- VISTA 4: EXAMEN ACTIVO -->
-        <div id="view-active-exam" class="hidden space-y-6">
-            <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm">
-                <div class="text-sm font-semibold">Simulacro Activo</div>
-                <div class="text-brand-600 font-mono font-bold" id="exam-timer">00:00</div>
-            </div>
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm min-h-[250px] flex items-center justify-center text-slate-400">
-                El motor del examen irá aquí.
-            </div>
-        </div>
-        
-        <!-- VISTA 5: ESTADÍSTICAS -->
-        <div id="view-statistics" class="hidden space-y-6">
-            <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-brand-600"></i> Estadísticas</h2>
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl text-center text-slate-500 shadow-sm">
-                Realiza tu primer simulacro para generar datos.
-            </div>
-        </div>
-    </main>
-
-    <!-- MODALES Y POPUPS -->
-    <!-- Modal: Nueva Carpeta -->
-    <div id="modal-new-folder" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl">
-            <h3 class="font-bold text-lg">Crear Nuevo Tema</h3>
-            <input type="text" id="folder-name-input" placeholder="Nombre de la carpeta" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <div class="flex gap-2">
-                <button onclick="closeNewFolderModal()" class="flex-1 bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-bold text-sm">Cancelar</button>
-                <button onclick="createFolder()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-bold text-sm shadow">Crear</button>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Modal: Mover (Carpetas o Exámenes) -->
-    <div id="modal-move" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-md w-full space-y-4 shadow-2xl">
-            <h3 class="font-bold text-lg border-b border-slate-200 dark:border-slate-700 pb-2">Mover a...</h3>
-            <p class="text-xs text-slate-500">Selecciona la carpeta destino.</p>
-            <div id="move-destinations-tree" class="max-h-64 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                <!-- Se inyecta dinámicamente -->
-            </div>
-            <div class="flex gap-2 pt-2">
-                <button onclick="closeMoveModal()" class="w-full bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-bold text-sm">Cancelar</button>
-            </div>
-        </div>
+    <!-- Navegación principal -->
+    <div class="nav-grid">
+      <div class="big-nav-btn" onclick="showView('select-test-launcher')">
+        <span>🚀</span>
+        <h3>Empezar Examen</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin:0.3rem 0 0 0;">Simulacros mixtos, modo estudio, fallos y repaso</p>
+      </div>
+
+      <div class="big-nav-btn" onclick="showView('my-exams')">
+        <span>📁</span>
+        <h3>Mis Exámenes</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin:0.3rem 0 0 0;">Gestión de carpetas, notas, editar e importar texto/Word</p>
+      </div>
     </div>
 
-    <!-- Modal: Configuración (Ajustes de Usuario) -->
-    <div id="modal-settings" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-5 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
-                <h3 class="font-bold text-lg"><i class="fa-solid fa-gear text-slate-500 mr-2"></i> Configuración</h3>
-                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <div class="space-y-3">
-                <button onclick="exportBackup()" class="w-full text-left bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-3 rounded-xl font-semibold text-sm hover:bg-indigo-100 transition flex items-center gap-3">
-                    <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Crear Copia de Seguridad
-                </button>
-                <button onclick="forceSync()" class="w-full text-left bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 p-3 rounded-xl font-semibold text-sm hover:bg-slate-200 transition flex items-center gap-3">
-                    <i class="fa-solid fa-rotate text-lg"></i> Forzar Sincronización
-                </button>
-                <button onclick="handleLogout()" class="w-full text-left bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 p-3 rounded-xl font-semibold text-sm hover:bg-rose-100 transition flex items-center gap-3">
-                    <i class="fa-solid fa-right-from-bracket text-lg"></i> Cerrar Sesión
-                </button>
-            </div>
+    <!-- Copia de seguridad -->
+    <div class="card">
+      <details>
+        <summary style="cursor:pointer; font-weight:600; color:var(--text-muted)">💾 Copia de Seguridad Local (JSON)</summary>
+        <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+          <button class="btn btn-secondary" style="flex:1;" onclick="exportData()">💾 Descargar Backup JSON</button>
+          <input type="file" id="import-backup" class="hidden" onchange="importData(event)">
+          <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('import-backup').click()">📂 Cargar Backup JSON</button>
         </div>
+      </details>
     </div>
 
-    <!-- Modal: Salida Segura (Examen) -->
-    <div id="modal-exit-confirm" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl max-w-sm text-center shadow-2xl space-y-4">
-            <div class="text-amber-500 text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <h3 class="font-bold text-lg">¿Salir del examen?</h3>
-            <div class="flex gap-2">
-                <button onclick="closeExitModal()" class="flex-1 bg-slate-200 dark:bg-slate-700 py-2.5 rounded-xl font-bold">Cancelar</button>
-                <button onclick="confirmExitExam()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-bold">Salir</button>
-            </div>
-        </div>
+  </div>
+
+  <!-- ==================== VISTA MIS EXÁMENES (GESTOR + BUSCADOR) ==================== -->
+  <div id="view-my-exams" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+      <h2>📁 Gestor de Exámenes</h2>
+      <div style="display:flex; gap:0.5rem;">
+        <button class="btn btn-secondary btn-sm" onclick="showView('home')">🏠 Inicio</button>
+        <button class="btn btn-warning btn-sm" onclick="showView('no-template')">📄 Importar Texto/Word</button>
+      </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- SCRIPT PRINCIPAL CORREGIDO Y FUNCIONAL     -->
-    <!-- ========================================== -->
-    <script>
-        // ==========================================
-        // CONFIGURACIÓN DE FIREBASE (Tus claves reales)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyD-oC3HEdPil30RIVowEhyzDh-gg24dTpE",
-            authDomain: "hiitest-ad475.firebaseapp.com",
-            projectId: "hiitest-ad475",
-            storageBucket: "hiitest-ad475.firebasestorage.app",
-            messagingSenderId: "689903902812",
-            appId: "1:689903902812:web:4cccc1b4952cec82b0c699",
-            measurementId: "G-CHGEGJ73LZ"
-        };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    <!-- Buscador Rápido de Preguntas / Exámenes -->
+    <div class="card" style="padding:0.85rem 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted)"></i>
+        <input type="text" id="global-search-input" placeholder="Buscar pregunta, palabra clave o examen en tus temas..." style="margin:0; border:none; background:transparent;" oninput="filterExamsQuickSearch(this.value)">
+      </div>
+    </div>
 
-        let appState = { folders: [], mistakes: [], stats: {} };
-        let currentUser = null;
-        let activeParentIdForNewFolder = null;
-        let targetFolderIdForImport = null;
-        let itemToMove = { id: null, type: null, sourceParentId: null };
-        let examInProgress = false;
+    <div class="card">
+      <h3>Crear Nueva Carpeta / Tema</h3>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <input type="text" id="folder-name-input" placeholder="Ej: Tema 1, Universidad, Oposición..." style="margin:0;">
+        <button class="btn btn-sm" style="height:42px; margin:0; padding:0 1.25rem;" onclick="createFolder()">Crear Carpeta</button>
+      </div>
+    </div>
 
-        // ----------------------------------------------------
-        // AUTENTICACIÓN Y CARGA RESILIENTE DE DATOS
-        // ----------------------------------------------------
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('main-header').classList.remove('hidden');
-                loadUserData();
-            } else {
-                currentUser = null;
-                document.getElementById('main-header').classList.add('hidden');
-                router('login');
-            }
-        });
+    <div id="folders-container"></div>
+  </div>
 
-        async function handleLogin() {
-            const e = document.getElementById('auth-email').value.trim();
-            const p = document.getElementById('auth-pass').value;
-            const errDiv = document.getElementById('auth-error');
-            if(!e || !p) {
-                errDiv.innerText = "Rellena todos los campos.";
-                errDiv.classList.remove('hidden');
-                return;
-            }
-            try {
-                await auth.signInWithEmailAndPassword(e, p);
-                errDiv.classList.add('hidden');
-            } catch (error) {
-                errDiv.innerText = "Error: Verifica tu correo y contraseña.";
-                errDiv.classList.remove('hidden');
-            }
-        }
+  <!-- ==================== VISTA LANZADOR DE EXAMEN ==================== -->
+  <div id="view-select-test-launcher" class="hidden">
+    <div class="card">
+      <h3>🚀 Seleccionar Exámenes para Empezar</h3>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+        Selecciona uno o varios exámenes para combinarlos en un simulacro mixto.
+      </p>
+      
+      <div id="launcher-tree" style="background:#0d131f; padding:1rem; border:1px solid var(--border); border-radius:10px; max-height:400px; overflow-y:auto; margin-bottom:1rem;"></div>
 
-        async function handleRegister() {
-            const e = document.getElementById('auth-email').value.trim();
-            const p = document.getElementById('auth-pass').value;
-            const errDiv = document.getElementById('auth-error');
-            if(!e || !p) {
-                errDiv.innerText = "Rellena todos los campos.";
-                errDiv.classList.remove('hidden');
-                return;
-            }
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(e, p);
-                await db.collection('users').doc(cred.user.uid).set({
-                    folders: [], mistakes: [], stats: {}
-                });
-                errDiv.classList.add('hidden');
-            } catch (error) {
-                errDiv.innerText = "Error al crear cuenta: " + error.message;
-                errDiv.classList.remove('hidden');
-            }
-        }
+      <button class="btn" onclick="proceedToConfigFromLauncher()">Siguiente: Configurar Test ➔</button>
+      <button class="btn btn-secondary" onclick="showView('home')">Cancelar</button>
+    </div>
+  </div>
 
-        function handleLogout() {
-            auth.signOut();
-            closeSettings();
-        }
+  <!-- ==================== VISTA EDITAR EXAMEN ==================== -->
+  <div id="view-edit-exam" class="hidden">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="edit-exam-title">✏️ Edición de Examen</h3>
+        <button class="btn btn-secondary btn-sm" onclick="showView('my-exams')">Volver</button>
+      </div>
+    </div>
+    <div id="edit-questions-container"></div>
+    <button class="btn btn-warning" style="margin-bottom:2rem;" onclick="saveExamEdits()">💾 Guardar Cambios</button>
+  </div>
 
-        async function loadUserData() {
-            showLoading("Cargando tus apuntes...");
-            try {
-                const docRef = db.collection('users').doc(currentUser.uid);
-                const doc = await docRef.get();
-                
-                if (doc.exists) {
-                    const data = doc.data();
-                    appState.folders = data.folders || [];
-                    appState.mistakes = data.mistakes || [];
-                    appState.stats = data.stats || {};
-                } else {
-                    await docRef.set({ folders: [], mistakes: [], stats: {} }, { merge: true });
-                    appState.folders = [];
-                    appState.mistakes = [];
-                    appState.stats = {};
-                }
-                router('home');
-            } catch (e) {
-                console.error("Error leyendo DB", e);
-                appState.folders = [];
-                router('home');
-            }
-            hideLoading();
-        }
+  <!-- ==================== VISTA IMPORTAR TEXTO / WORD ==================== -->
+  <div id="view-no-template" class="hidden">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <h3>Importador de Exámenes (Texto y Word .docx)</h3>
+        <button class="btn btn-secondary btn-sm" onclick="showView('my-exams')">Volver</button>
+      </div>
+      
+      <div style="background:#0d131f; border:1px solid var(--border); padding:1rem; border-radius:10px; margin-bottom:1rem;">
+        <label><b>📂 Subir archivo de texto o Word:</b></label>
+        <input type="file" id="nt-file-upload" accept=".txt,.docx" onchange="handleTextFileUpload(event)" style="margin-top:0.5rem; margin-bottom:0; background:transparent; border:none; padding:0;">
+      </div>
+      
+      <label><b>Carpeta Destino:</b></label>
+      <select id="nt-folder-select"></select>
 
-        async function syncDataToCloud() {
-            if (!currentUser) return;
-            try {
-                await db.collection('users').doc(currentUser.uid).set({
-                    folders: appState.folders,
-                    mistakes: appState.mistakes,
-                    stats: appState.stats
-                }, { merge: true });
-            } catch (e) {
-                console.error("Error guardando", e);
-            }
-        }
+      <label><b>Nombre del Examen:</b></label>
+      <input type="text" id="nt-test-name" placeholder="Ej: Test Tema 1">
 
-        async function forceSync() {
-            showLoading("Sincronizando con la nube...");
-            await loadUserData();
-            hideLoading();
-            closeSettings();
-        }
+      <label><b>Contenido:</b></label>
+      <textarea id="nt-raw-text" style="min-height:150px;" placeholder="Pega el texto aquí..."></textarea>
 
-        function exportBackup() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "Copia_Seguridad_HIITest.json");
-            dlAnchorElem.click();
-            closeSettings();
-        }
+      <button class="btn" onclick="parseRawText()">🔍 Procesar Preguntas</button>
+    </div>
 
-        // ----------------------------------------------------
-        // ENRUTADOR Y VISTAS
-        // ----------------------------------------------------
-        function router(viewName) {
-            if (examInProgress && viewName !== 'active-exam') {
-                document.getElementById('modal-exit-confirm').classList.remove('hidden');
-                return;
-            }
-            document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            document.getElementById('import-section').classList.add('hidden');
-            
-            const btnBack = document.getElementById('btn-back');
-            if (viewName === 'home' || viewName === 'login') btnBack.classList.add('hidden');
-            else btnBack.classList.remove('hidden');
+    <div id="nt-editor-panel" class="card hidden">
+      <div id="nt-status-banner"></div>
+      <div id="nt-template-box" class="hidden" style="background:#0d131f; padding:1rem; border-radius:10px; margin-bottom:1rem; border:1px solid var(--border);">
+        <label><b>📋 Plantilla de respuestas (opcional):</b></label>
+        <textarea id="nt-template-input" style="min-height:60px;" placeholder="Ej: 1A, 2C, 3B..."></textarea>
+        <button class="btn btn-secondary btn-sm" onclick="applyAnswerTemplate()">⚡ Aplicar Plantilla</button>
+      </div>
+      <h3>Revisión de Preguntas</h3>
+      <div id="nt-questions-list"></div>
+      <button class="btn btn-warning" onclick="saveNoTemplateTest()">💾 Guardar Examen Completo</button>
+    </div>
+  </div>
 
-            if (viewName === 'manage-folders') renderFoldersTree();
-            if (viewName === 'exam-setup') renderExamSelectionTree();
-        }
+  <!-- ==================== VISTA CONFIGURACIÓN DE TEST ==================== -->
+  <div id="view-config" class="hidden">
+    <div class="card">
+      <h3>Configurar Sesión de Test</h3>
+      <p id="config-target-info" style="color:var(--primary); font-weight:bold; margin-bottom:1rem;"></p>
+      
+      <label><b>Modo de Test:</b></label>
+      <select id="cfg-session-mode">
+        <option value="study">Modo Estudio (Corrección inmediata + Anotaciones)</option>
+        <option value="simulacro">Modo Simulacro (Corrección al finalizar)</option>
+      </select>
 
-        document.getElementById('btn-home').addEventListener('click', () => { if(currentUser) router('home'); });
-        document.getElementById('btn-back').addEventListener('click', () => {
-            if (examInProgress) document.getElementById('modal-exit-confirm').classList.remove('hidden');
-            else router('home');
-        });
+      <label><b>⏱️ Temporizador:</b></label>
+      <select id="cfg-timer-mode">
+        <option value="0">Sin tiempo límite</option>
+        <option value="600">10 minutos</option>
+        <option value="1800">30 minutos</option>
+        <option value="3600">60 minutos (1 hora)</option>
+      </select>
 
-        // ----------------------------------------------------
-        // GESTIÓN DE CARPETAS Y ESTADO VACÍO
-        // ----------------------------------------------------
-        function renderFoldersTree() {
-            const container = document.getElementById('folders-tree-container');
-            if (!appState.folders || appState.folders.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-10 space-y-5 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <i class="fa-solid fa-folder-open text-5xl text-slate-300 dark:text-slate-600"></i>
-                        <p class="text-slate-500 font-bold">Aquí aparecerán tus temas y exámenes.</p>
-                        <div class="flex flex-col gap-3 max-w-sm mx-auto mt-4 px-4">
-                            <button onclick="openNewFolderModal(null)" class="bg-brand-600 text-white font-bold py-3 rounded-xl shadow hover:bg-brand-700 transition">
-                                <i class="fa-solid fa-folder-plus mr-2"></i> Crear tema (carpetas)
-                            </button>
-                            <button onclick="safeOpenImport()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
-                                <i class="fa-solid fa-file-arrow-up mr-2"></i> Subir documento de texto/word
-                            </button>
-                            <button onclick="safeOpenImport()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-xl hover:bg-slate-200 transition">
-                                <i class="fa-solid fa-paste mr-2"></i> Añadir preguntas manualmente (copiando y pegando)
-                            </button>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            container.innerHTML = `<button onclick="openNewFolderModal(null)" class="mb-4 bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition"><i class="fa-solid fa-plus mr-1"></i> Nueva Carpeta Raíz</button>` + generateFolderHTML(appState.folders, 0);
-        }
+      <div class="checkbox-group">
+        <input type="checkbox" id="cfg-keep-order">
+        <label for="cfg-keep-order"><b>Mantener orden original</b></label>
+      </div>
 
-        function safeOpenImport() {
-            if(!appState.folders || appState.folders.length === 0) {
-                alert("Primero debes crear un Tema (carpeta) donde guardar el examen.");
-                openNewFolderModal(null);
-            } else {
-                prepareImport(appState.folders[0].id, appState.folders[0].name);
-            }
-        }
+      <label><b>Descuento por fallo:</b></label>
+      <select id="cfg-penalty">
+        <option value="0">No resta (0)</option>
+        <option value="0.333" selected>Resta 1/3 (-0.33)</option>
+        <option value="0.5">Resta 1/2 (-0.50)</option>
+        <option value="0.25">Resta 1/4 (-0.25)</option>
+      </select>
 
-        function generateFolderHTML(foldersArray, level) {
-            let html = '';
-            for (const f of foldersArray) {
-                const pad = level * 1.5;
-                html += `
-                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 shadow-sm mb-2" style="margin-left: ${pad}rem">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-3 font-bold cursor-pointer flex-1" onclick="toggleCollapse('${f.id}')">
-                            <i class="fa-solid fa-folder text-brand-500"></i> ${f.name}
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="openNewFolderModal('${f.id}')" class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1.5 rounded" title="Subcarpeta"><i class="fa-solid fa-folder-plus text-slate-500"></i></button>
-                            <button onclick="prepareImport('${f.id}', '${f.name}')" class="text-xs bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-400 px-2 py-1.5 rounded" title="Añadir Examen"><i class="fa-solid fa-file-circle-plus"></i></button>
-                            
-                            <!-- BOTÓN MOVER -->
-                            <button onclick="openMoveModal('${f.id}', 'folder', '${f.parentId || null}')" class="px-2 py-1.5 text-slate-400 hover:text-brand-500" title="Mover Carpeta"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            
-                            <button onclick="toggleCollapse('${f.id}')" class="px-2 py-1.5"><i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i></button>
-                        </div>
-                    </div>
-                    
-                    <div id="content_${f.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
-                        ${f.folders && f.folders.length > 0 ? generateFolderHTML(f.folders, level + 1) : ''}
-                        ${f.exams && f.exams.length > 0 ? f.exams.map(ex => `
-                            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-700 ml-4">
-                                <span class="flex items-center gap-2 font-medium"><i class="fa-solid fa-file-lines text-slate-400"></i> ${ex.name}</span>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-mono text-slate-500">${ex.questions ? ex.questions.length : 0} preg</span>
-                                    <button onclick="openMoveModal('${ex.id}', 'exam', '${f.id}')" class="text-slate-400 hover:text-brand-500" title="Mover Examen"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                                </div>
-                            </div>
-                        `).join('') : ''}
-                    </div>
-                </div>`;
-            }
-            return html;
-        }
+      <label><b>Filtro de Selección de Preguntas:</b></label>
+      <select id="cfg-mode">
+        <option value="all">Todas las preguntas seleccionadas</option>
+        <option value="random">Aleatorio simple (mezcla total)</option>
+        <option value="starred">⭐ Solo preguntas Dudosas / Favoritas</option>
+        <option value="failed">Test de Fallos (Falladas en el último intento)</option>
+        <option value="most-failed">Preguntas que más he fallado</option>
+        <option value="to-learn">Preguntas por aprender (&lt; 75% aciertos)</option>
+        <option value="least-seen">Preguntas menos vistas</option>
+      </select>
 
-        function toggleCollapse(id) { document.getElementById(`content_${id}`).classList.toggle('hidden'); }
+      <label><b>Nº de Preguntas (Corte):</b></label>
+      <select id="cfg-limit">
+        <option value="10">10 preguntas</option>
+        <option value="20">20 preguntas</option>
+        <option value="30">30 preguntas</option>
+        <option value="50">50 preguntas</option>
+        <option value="100">100 preguntas</option>
+        <option value="0" selected>Todas las disponibles</option>
+      </select>
 
-        function openNewFolderModal(parentId) {
-            activeParentIdForNewFolder = parentId;
-            document.getElementById('folder-name-input').value = '';
-            document.getElementById('modal-new-folder').classList.remove('hidden');
-        }
-        function closeNewFolderModal() { document.getElementById('modal-new-folder').classList.add('hidden'); }
-        
-        async function createFolder() {
-            const name = document.getElementById('folder-name-input').value.trim();
-            if (!name) return alert('Escribe un nombre.');
-            
-            const newF = { id: 'f_' + Date.now(), name: name, folders: [], exams: [], parentId: activeParentIdForNewFolder };
-            if (activeParentIdForNewFolder === null) {
-                appState.folders = appState.folders || [];
-                appState.folders.push(newF);
-            } else {
-                const parent = findNode(appState.folders, activeParentIdForNewFolder);
-                if (parent) {
-                    parent.folders = parent.folders || [];
-                    parent.folders.push(newF);
-                }
-            }
-            closeNewFolderModal();
-            renderFoldersTree();
-            await syncDataToCloud();
-        }
+      <button class="btn" onclick="startTest()">🚀 Comenzar Test</button>
+      <button class="btn btn-secondary" onclick="showView('select-test-launcher')">Volver</button>
+    </div>
+  </div>
 
-        function findNode(array, id) {
-            if(!array) return null;
-            for (let f of array) {
-                if (f.id === id) return f;
-                if (f.folders && f.folders.length > 0) {
-                    const found = findNode(f.folders, id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        }
+  <!-- ==================== VISTA EJECUCIÓN DE TEST ==================== -->
+  <div id="view-test" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
+      <span class="badge" id="test-progress">Pregunta 1/10</span>
+      <span class="badge hidden" id="test-timer" style="background:#ef4444; color:white;">⏱️ 00:00</span>
+      <button class="btn btn-secondary btn-sm" id="star-btn" onclick="toggleStarCurrent()">⭐ Duda / Favorita</button>
+      <span class="badge" id="test-score-live">Aciertos: 0 | Fallos: 0</span>
+    </div>
 
-        // ----------------------------------------------------
-        // SISTEMA DE MOVER
-        // ----------------------------------------------------
-        function openMoveModal(itemId, itemType, sourceParentId) {
-            itemToMove = { id: itemId, type: itemType, sourceParentId: sourceParentId };
-            const container = document.getElementById('move-destinations-tree');
-            
-            let html = `<div onclick="executeMove(null)" class="cursor-pointer p-2 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg text-sm font-bold border-b border-slate-200 dark:border-slate-700 mb-2"><i class="fa-solid fa-home text-slate-400 mr-2"></i> Mover a la Raíz (Inicio)</div>`;
-            html += generateMoveDestinations(appState.folders, 0, itemId, itemType);
-            
-            container.innerHTML = html;
-            document.getElementById('modal-move').classList.remove('hidden');
-        }
+    <div class="card">
+      <h3 id="q-enunciado" style="margin-bottom:1rem;">---</h3>
+      <div id="q-options"></div>
+    </div>
 
-        function generateMoveDestinations(foldersArray, level, excludeId, itemType) {
-            if(!foldersArray) return '';
-            let html = '';
-            for (let f of foldersArray) {
-                if (itemType === 'folder' && f.id === excludeId) continue;
-                const pad = level * 1.5;
-                html += `<div onclick="executeMove('${f.id}')" class="cursor-pointer p-2 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg text-sm flex items-center gap-2 transition" style="margin-left: ${pad}rem"><i class="fa-solid fa-folder text-amber-500"></i> ${f.name}</div>`;
-                if (f.folders && f.folders.length > 0) {
-                    html += generateMoveDestinations(f.folders, level + 1, excludeId, itemType);
-                }
-            }
-            return html;
-        }
+    <div id="explanation-box" class="card hidden">
+      <h4 id="expl-result-title">---</h4>
+      <p style="margin-top:0.5rem;"><b>Fundamento / Explicación:</b></p>
+      <textarea id="expl-text-input" placeholder="Añade o edita tus notas aquí..."></textarea>
+      <div style="display:flex; gap:0.5rem;">
+        <button class="btn btn-secondary" onclick="saveAnnotation()">💾 Guardar Nota</button>
+        <button class="btn" onclick="nextQuestion()">Siguiente Pregunta ➔</button>
+      </div>
+    </div>
+    
+    <button class="btn hidden" id="next-simulacro-btn" onclick="nextQuestionSimulacro()">Siguiente Pregunta ➔</button>
+  </div>
 
-        function closeMoveModal() { document.getElementById('modal-move').classList.add('hidden'); }
+  <!-- ==================== VISTA RESULTADOS ==================== -->
+  <div id="view-results" class="hidden">
+    <div class="card" style="text-align:center;">
+      <h2>Resultado Final del Test</h2>
+      <h1 id="res-score" style="font-size:3rem; margin:1rem 0; color:var(--primary);">0.00</h1>
+      <p id="res-details" style="font-size:1.1rem; line-height:1.6;">---</p>
+      <button class="btn" onclick="showView('home')">Volver al Cuadro de Mandos</button>
+    </div>
+  </div>
 
-        async function executeMove(destinationFolderId) {
-            let extractedItem = null;
-            
-            if (itemToMove.sourceParentId === 'null' || !itemToMove.sourceParentId) {
-                const idx = appState.folders.findIndex(f => f.id === itemToMove.id);
-                if (idx > -1) extractedItem = appState.folders.splice(idx, 1)[0];
-            } else {
-                const parentFolder = findNode(appState.folders, itemToMove.sourceParentId);
-                if (parentFolder) {
-                    if (itemToMove.type === 'folder') {
-                        const idx = parentFolder.folders.findIndex(f => f.id === itemToMove.id);
-                        if (idx > -1) extractedItem = parentFolder.folders.splice(idx, 1)[0];
-                    } else if (itemToMove.type === 'exam') {
-                        const idx = parentFolder.exams.findIndex(e => e.id === itemToMove.id);
-                        if (idx > -1) extractedItem = parentFolder.exams.splice(idx, 1)[0];
-                    }
-                }
-            }
+</div>
 
-            if (!extractedItem) return alert("Error al extraer el archivo.");
+<script>
+// ==================== CONFIGURACIÓN FIREBASE ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyD-oC3HEdPil30RIVowEhyzDh-gg24dTpE",
+  authDomain: "hiitest-ad475.firebaseapp.com",
+  projectId: "hiitest-ad475",
+  storageBucket: "hiitest-ad475.firebasestorage.app",
+  messagingSenderId: "689903902812",
+  appId: "1:689903902812:web:4cccc1b4952cec82b0c699",
+  measurementId: "G-CHGEGJ73LZ"
+};
 
-            if (destinationFolderId === null) {
-                if (itemToMove.type === 'folder') {
-                    extractedItem.parentId = null;
-                    appState.folders.push(extractedItem);
-                } else {
-                    alert("Los exámenes deben estar dentro de una carpeta.");
-                    return closeMoveModal();
-                }
-            } else {
-                const destFolder = findNode(appState.folders, destinationFolderId);
-                if (destFolder) {
-                    if (itemToMove.type === 'folder') {
-                        extractedItem.parentId = destFolder.id;
-                        destFolder.folders = destFolder.folders || [];
-                        destFolder.folders.push(extractedItem);
-                    } else {
-                        destFolder.exams = destFolder.exams || [];
-                        destFolder.exams.push(extractedItem);
-                    }
-                }
-            }
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const firestore = firebase.firestore();
 
-            closeMoveModal();
-            renderFoldersTree();
-            await syncDataToCloud();
-        }
+let currentUser = null;
+let db = { folders: {}, stats: {} };
+let currentSession = {
+  questions: [], currentIndex: 0, penalty: 0.333,
+  sessionMode: 'study', hits: 0, misses: 0, userAnswers: {}
+};
+let tempParsedQuestions = [];
+let showExplanationInputsInParser = false;
+let editingTarget = { fId: null, tId: null };
+let activeTargets = [];
+let timerInterval = null;
+let timeRemaining = 0;
 
-        // ----------------------------------------------------
-        // IMPORTAR EXÁMENES
-        // ----------------------------------------------------
-        function prepareImport(id, name) {
-            targetFolderIdForImport = id;
-            document.getElementById('target-folder-name').innerText = name;
-            document.getElementById('import-section').classList.remove('hidden');
-            document.getElementById('new-exam-name').value = '';
-            document.getElementById('import-text-input').value = '';
-            document.getElementById('new-exam-name').focus();
-        }
-        function cancelImport() { document.getElementById('import-section').classList.add('hidden'); }
+function togglePasswordVisibility(inputId, btnEl) {
+  const input = document.getElementById(inputId);
+  if (input.type === "password") {
+    input.type = "text";
+    btnEl.innerText = "🙈";
+  } else {
+    input.type = "password";
+    btnEl.innerText = "👁️";
+  }
+}
 
-        function handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) { document.getElementById('import-text-input').value = evt.target.result; };
-            reader.readAsText(file);
-        }
+// MONITOR DE AUTENTICACIÓN
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('user-email-badge').innerText = user.email;
+    document.getElementById('header-user-info').classList.remove('hidden');
+    await loadUserDataFromCloud();
+    showView('home');
+  } else {
+    currentUser = null;
+    document.getElementById('header-user-info').classList.add('hidden');
+    showView('login');
+  }
+});
 
-        async function saveExam() {
-            const rawText = document.getElementById('import-text-input').value.trim();
-            const name = document.getElementById('new-exam-name').value.trim() || 'Nuevo Examen';
-            if (!rawText) return alert('No hay contenido para guardar.');
+async function loginUser() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value.trim();
+  const errDiv = document.getElementById('login-error');
+  if(!email || !pass) { errDiv.innerText = 'Rellena todos los campos.'; return; }
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch (e) { errDiv.innerText = 'ERROR: ' + e.message; }
+}
 
-            const dest = findNode(appState.folders, targetFolderIdForImport);
-            if (dest) {
-                showLoading("Procesando y guardando en la nube...");
-                dest.exams = dest.exams || [];
-                dest.exams.push({ id: 'ex_' + Date.now(), name: name, questions: Array(5).fill({}) });
-                
-                await syncDataToCloud();
-                
-                hideLoading();
-                cancelImport();
-                renderFoldersTree();
-                alert('¡Examen guardado correctamente!');
-            }
-        }
+async function registerUser() {
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value.trim();
+  const passConfirm = document.getElementById('reg-password-confirm').value.trim();
+  const errDiv = document.getElementById('reg-error');
+  if(pass !== passConfirm) { errDiv.innerText = 'Las contraseñas no coinciden.'; return; }
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await auth.createUserWithEmailAndPassword(email, pass);
+    alert('¡Cuenta registrada con éxito!');
+  } catch (e) { errDiv.innerText = 'Error: ' + e.message; }
+}
 
-        // ----------------------------------------------------
-        // UTILIDADES Y UI
-        // ----------------------------------------------------
-        function openSettings() { document.getElementById('modal-settings').classList.remove('hidden'); }
-        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-        
-        function showLoading(text) {
-            document.getElementById('loading-text').innerText = text;
-            document.getElementById('loading-spinner').classList.remove('hidden');
-        }
-        function hideLoading() { document.getElementById('loading-spinner').classList.add('hidden'); }
+function logoutUser() { auth.signOut(); }
 
-        function renderExamSelectionTree() {
-            const c = document.getElementById('exam-selection-tree');
-            c.innerHTML = (!appState.folders || appState.folders.length === 0) ? `<div class="text-center text-slate-400 py-4 text-sm">No tienes exámenes para seleccionar.</div>` : '<i>(Selección de exámenes renderizada aquí)</i>';
-        }
+async function saveDB() {
+  if (!currentUser) return;
+  try { await firestore.collection('users').doc(currentUser.uid).set(db); }
+  catch (e) { console.error('Error al guardar:', e); }
+}
 
-        document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); });
-    </script>
+async function loadUserDataFromCloud() {
+  if (!currentUser) return;
+  try {
+    const doc = await firestore.collection('users').doc(currentUser.uid).get();
+    if (doc.exists) {
+      db = doc.data();
+      if(!db.folders) db.folders = {};
+      if(!db.stats) db.stats = {};
+    } else {
+      db = { folders: {}, stats: {} };
+      await saveDB();
+    }
+  } catch (e) { console.error('Error al cargar datos:', e); }
+}
+
+function showView(viewId) {
+  clearInterval(timerInterval);
+  document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
+  document.getElementById('view-' + viewId).classList.remove('hidden');
+  
+  if(viewId === 'home') renderHomeDashboard();
+  if(viewId === 'my-exams') renderMyExams();
+  if(viewId === 'select-test-launcher') prepareTestLauncher();
+  if(viewId === 'no-template') prepareNoTemplateView();
+}
+
+// DASHBOARD CON ESTADÍSTICAS AVANZADAS
+function renderHomeDashboard() {
+  let totalQuestionsSeen = Object.keys(db.stats || {}).length;
+  document.getElementById('stats-total-questions').innerText = `${totalQuestionsSeen} Preguntas en Historial`;
+
+  const folderStats = [];
+  Object.keys(db.folders || {}).forEach(fId => {
+    const folder = db.folders[fId];
+    let hits = 0, misses = 0;
+    Object.keys(folder.tests || {}).forEach(tId => {
+      const test = folder.tests[tId];
+      (test.questions || []).forEach(q => {
+        const st = (db.stats || {})[q.enunciado];
+        if(st) { hits += st.hits || 0; misses += st.misses || 0; }
+      });
+    });
+    const total = hits + misses;
+    const ratio = total > 0 ? ((hits / total) * 100).toFixed(1) : null;
+    folderStats.push({ name: folder.name, ratio: ratio !== null ? parseFloat(ratio) : null });
+  });
+
+  const validFolders = folderStats.filter(f => f.ratio !== null);
+  const worstList = [...validFolders].sort((a, b) => a.ratio - b.ratio).slice(0, 3);
+  document.getElementById('ranking-worst-list').innerHTML = worstList.length === 0 ? '<p style="color:var(--text-muted); font-size:0.85rem;">Haz test para ver datos</p>' :
+    worstList.map(f => `<div class="ranking-item"><span>📁 <b>${f.name}</b></span><span class="tag-score tag-bad">${f.ratio}% Acierto</span></div>`).join('');
+
+  const bestList = [...validFolders].sort((a, b) => b.ratio - a.ratio).slice(0, 3);
+  document.getElementById('ranking-best-list').innerHTML = bestList.length === 0 ? '<p style="color:var(--text-muted); font-size:0.85rem;">Haz test para ver datos</p>' :
+    bestList.map(f => `<div class="ranking-item"><span>📁 <b>${f.name}</b></span><span class="tag-score tag-good">${f.ratio}% Acierto</span></div>`).join('');
+}
+
+// GESTOR DE EXÁMENES
+function renderMyExams(filterText = '') {
+  const container = document.getElementById('folders-container');
+  container.innerHTML = '';
+  const fKeys = Object.keys(db.folders || {});
+
+  if(fKeys.length === 0) {
+    container.innerHTML = '<div class="card"><p style="color:var(--text-muted)">No hay carpetas creadas.</p></div>';
+    return;
+  }
+
+  let hasVisibleContent = false;
+
+  fKeys.forEach(fId => {
+    const folder = db.folders[fId];
+    const testKeys = Object.keys(folder.tests || {});
+    
+    // Filtrar tests si hay texto de búsqueda
+    const matchingTests = testKeys.filter(tId => {
+      const test = folder.tests[tId];
+      if(!filterText) return true;
+      const query = filterText.toLowerCase();
+      const matchName = test.name.toLowerCase().includes(query);
+      const matchQ = (test.questions || []).some(q => q.enunciado.toLowerCase().includes(query));
+      return matchName || matchQ;
+    });
+
+    if(filterText && matchingTests.length === 0 && !folder.name.toLowerCase().includes(filterText.toLowerCase())) return;
+    hasVisibleContent = true;
+
+    let scoreSum = 0, scoredCount = 0;
+    testKeys.forEach(tId => {
+      const score = folder.tests[tId].lastScore;
+      if(score !== undefined && score !== null) { scoreSum += parseFloat(score); scoredCount++; }
+    });
+    const avgScoreText = scoredCount > 0 ? (scoreSum / scoredCount).toFixed(2) + ' / 10' : 'Sin realizar';
+
+    let html = `
+      <div class="folder-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+          <div>
+            <h3 style="font-size:1.2rem; color:#f3f4f6;">📁 ${folder.name}</h3>
+            <span class="badge" style="margin-top:0.3rem;">Nota Media: <b>${avgScoreText}</b></span>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteFolder('${fId}')">Eliminar Carpeta</button>
+        </div>
+        <div>
+    `;
+
+    const testsToRender = filterText ? matchingTests : testKeys;
+    if(testsToRender.length === 0) {
+      html += `<p style="font-size:0.85rem; color:var(--text-muted);">Sin exámenes coincidentes.</p>`;
+    } else {
+      testsToRender.forEach(tId => {
+        const test = folder.tests[tId];
+        const lastScoreDisplay = test.lastScore !== undefined && test.lastScore !== null ? `${test.lastScore} / 10` : 'Sin nota';
+
+        html += `
+          <div class="test-row">
+            <div>
+              <b style="font-size:1rem;">📝 ${test.name}</b>
+              <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">
+                ${test.questions.length} preg. | Nota: <b style="color:var(--text-main);">${lastScoreDisplay}</b>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+              <button class="btn btn-sm" onclick="openConfig([{fId: '${fId}', tId: '${tId}'}])">🚀 Hacer Test</button>
+              <button class="btn btn-secondary btn-sm" onclick="openExamEditor('${fId}', '${tId}')">✏️ Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteTest('${fId}', '${tId}')">✕</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += `
+        <div style="margin-top:0.75rem;">
+          <input type="file" id="up_${fId}" class="hidden" accept=".json" onchange="uploadTest('${fId}', event)">
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('up_${fId}').click()">➕ Cargar JSON</button>
+        </div>
+      </div></div>
+    `;
+    container.innerHTML += html;
+  });
+
+  if(!hasVisibleContent) {
+    container.innerHTML = `<div class="card"><p style="color:var(--text-muted); text-align:center;">No se encontraron resultados para "${filterText}".</p></div>`;
+  }
+}
+
+// BUSCADOR RÁPIDO
+function filterExamsQuickSearch(query) {
+  renderMyExams(query.trim());
+}
+
+function createFolder() {
+  const name = document.getElementById('folder-name-input').value.trim();
+  if(!name) return alert('Introduce un nombre.');
+  const id = 'f_' + Date.now();
+  if(!db.folders) db.folders = {};
+  db.folders[id] = { name: name, tests: {} };
+  saveDB();
+  document.getElementById('folder-name-input').value = '';
+  renderMyExams();
+}
+
+function deleteFolder(fId) {
+  if(confirm('¿Eliminar carpeta y todos sus exámenes?')) { delete db.folders[fId]; saveDB(); renderMyExams(); }
+}
+
+function uploadTest(fId, event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      const testId = 't_' + Date.now();
+      db.folders[fId].tests[testId] = { name: file.name.replace('.json',''), questions: json, lastScore: null };
+      saveDB(); renderMyExams();
+    } catch(err) { alert('Error al leer el JSON.'); }
+  };
+  reader.readAsText(file);
+}
+
+function deleteTest(fId, tId) {
+  if(confirm('¿Eliminar este examen?')) { delete db.folders[fId].tests[tId]; saveDB(); renderMyExams(); }
+}
+
+// EDITOR DE PREGUNTAS
+function openExamEditor(fId, tId) {
+  editingTarget = { fId, tId };
+  const test = db.folders[fId].tests[tId];
+  document.getElementById('edit-exam-title').innerText = `✏️ Editando: ${test.name}`;
+  
+  const container = document.getElementById('edit-questions-container');
+  container.innerHTML = '';
+
+  test.questions.forEach((q, idx) => {
+    container.innerHTML += `
+      <div class="editor-q-card">
+        <label><b>Pregunta ${idx + 1}:</b></label>
+        <input type="text" id="ed_enunciado_${idx}" value="${q.enunciado.replace(/"/g, '&quot;')}">
+        <label style="font-size:0.85rem;">Opción A:</label>
+        <input type="text" id="ed_opA_${idx}" value="${(q.opcionA||'').replace(/"/g, '&quot;')}">
+        <label style="font-size:0.85rem;">Opción B:</label>
+        <input type="text" id="ed_opB_${idx}" value="${(q.opcionB||'').replace(/"/g, '&quot;')}">
+        <label style="font-size:0.85rem;">Opción C:</label>
+        <input type="text" id="ed_opC_${idx}" value="${(q.opcionC||'').replace(/"/g, '&quot;')}">
+        <label style="font-size:0.85rem;">Opción D:</label>
+        <input type="text" id="ed_opD_${idx}" value="${(q.opcionD||'').replace(/"/g, '&quot;')}">
+        <label style="font-size:0.85rem;">Correcta:</label>
+        <select id="ed_correcta_${idx}">
+          <option value="A" ${q.correcta==='A'?'selected':''}>A</option>
+          <option value="B" ${q.correcta==='B'?'selected':''}>B</option>
+          <option value="C" ${q.correcta==='C'?'selected':''}>C</option>
+          <option value="D" ${q.correcta==='D'?'selected':''}>D</option>
+        </select>
+        <label style="font-size:0.85rem;">Nota / Explicación:</label>
+        <textarea id="ed_expl_${idx}">${q.explicacion || ''}</textarea>
+      </div>
+    `;
+  });
+  showView('edit-exam');
+}
+
+function saveExamEdits() {
+  const { fId, tId } = editingTarget;
+  const test = db.folders[fId].tests[tId];
+  test.questions.forEach((q, idx) => {
+    q.enunciado = document.getElementById(`ed_enunciado_${idx}`).value;
+    q.opcionA = document.getElementById(`ed_opA_${idx}`).value;
+    q.opcionB = document.getElementById(`ed_opB_${idx}`).value;
+    q.opcionC = document.getElementById(`ed_opC_${idx}`).value;
+    q.opcionD = document.getElementById(`ed_opD_${idx}`).value;
+    q.correcta = document.getElementById(`ed_correcta_${idx}`).value;
+    q.explicacion = document.getElementById(`ed_expl_${idx}`).value;
+  });
+  saveDB(); alert('¡Cambios guardados!'); showView('my-exams');
+}
+
+// LANZADOR DE TEST
+function prepareTestLauncher() {
+  const container = document.getElementById('launcher-tree');
+  container.innerHTML = '';
+  const fKeys = Object.keys(db.folders || {});
+  
+  if(fKeys.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted)">No hay carpetas creadas.</p>';
+    return;
+  }
+
+  let hasTests = false;
+  fKeys.forEach(fId => {
+    const folder = db.folders[fId];
+    const tKeys = Object.keys(folder.tests || {});
+    if(tKeys.length > 0) {
+      hasTests = true;
+      let html = `
+        <div class="tree-folder">
+          <label class="tree-label" style="font-weight:bold; color:var(--primary);">
+            <input type="checkbox" onchange="toggleFolderCheckboxes('${fId}', this.checked)"> 📁 ${folder.name}
+          </label>
+          <div class="tree-tests" id="folder_tests_${fId}">
+      `;
+      tKeys.forEach(tId => {
+        const test = folder.tests[tId];
+        html += `
+          <label class="tree-label" style="font-size:0.95rem;">
+            <input type="checkbox" class="launcher-test-cb" value="${fId}|${tId}"> 📝 ${test.name} <span style="color:var(--text-muted); font-size:0.8rem;">(${test.questions.length} preg.)</span>
+          </label>
+        `;
+      });
+      html += `</div></div>`;
+      container.innerHTML += html;
+    }
+  });
+
+  if(!hasTests) container.innerHTML = '<p style="color:var(--text-muted)">Aún no tienes exámenes guardados.</p>';
+}
+
+function toggleFolderCheckboxes(fId, isChecked) {
+  const container = document.getElementById(`folder_tests_${fId}`);
+  if(container) container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
+}
+
+function proceedToConfigFromLauncher() {
+  const cbs = document.querySelectorAll('.launcher-test-cb:checked');
+  if(cbs.length === 0) return alert('Debes marcar al menos un examen.');
+  let targets = [];
+  cbs.forEach(cb => { const parts = cb.value.split('|'); targets.push({ fId: parts[0], tId: parts[1] }); });
+  openConfig(targets);
+}
+
+function openConfig(targets) {
+  activeTargets = targets;
+  const infoLabel = document.getElementById('config-target-info');
+  if (activeTargets.length === 1) {
+    const test = db.folders[activeTargets[0].fId].tests[activeTargets[0].tId];
+    infoLabel.innerText = `📝 Examen: ${test.name} (${test.questions.length} preguntas)`;
+  } else {
+    infoLabel.innerText = `📑 Simulacro Mixto: ${activeTargets.length} exámenes seleccionados`;
+  }
+  showView('config');
+}
+
+// EJECUCIÓN DE TEST
+function startTest() {
+  let pool = [];
+  activeTargets.forEach(target => {
+    const test = db.folders[target.fId].tests[target.tId];
+    if(test && test.questions) pool = pool.concat(JSON.parse(JSON.stringify(test.questions)));
+  });
+
+  const mode = document.getElementById('cfg-mode').value;
+  const limit = parseInt(document.getElementById('cfg-limit').value);
+  const keepOrder = document.getElementById('cfg-keep-order').checked;
+  const timerSeconds = parseInt(document.getElementById('cfg-timer-mode').value);
+
+  currentSession.sessionMode = document.getElementById('cfg-session-mode').value;
+  currentSession.penalty = parseFloat(document.getElementById('cfg-penalty').value);
+
+  if(mode === 'starred') {
+    pool = pool.filter(q => db.stats[q.enunciado] && db.stats[q.enunciado].starred);
+  } else if(mode === 'failed') {
+    pool = pool.filter(q => db.stats[q.enunciado] && db.stats[q.enunciado].lastFailed === true);
+  } else if(mode === 'most-failed') {
+    pool.sort((a, b) => {
+      const stA = db.stats[a.enunciado] ? db.stats[a.enunciado].misses : 0;
+      const stB = db.stats[b.enunciado] ? db.stats[b.enunciado].misses : 0;
+      return stB - stA;
+    });
+  } else if(mode === 'to-learn') {
+    pool = pool.filter(q => {
+      const st = db.stats[q.enunciado];
+      if(!st || (st.hits + st.misses) === 0) return true;
+      const ratio = (st.hits / (st.hits + st.misses)) * 100;
+      return ratio > 0 && ratio < 75;
+    });
+  } else if(mode === 'least-seen') {
+    pool.sort((a, b) => {
+      const stA = db.stats[a.enunciado] ? (db.stats[a.enunciado].hits + db.stats[a.enunciado].misses) : 0;
+      const stB = db.stats[b.enunciado] ? (db.stats[b.enunciado].hits + db.stats[b.enunciado].misses) : 0;
+      return stA - stB;
+    });
+  } else if(mode === 'random' && !keepOrder) {
+    pool.sort(() => Math.random() - 0.5);
+  }
+
+  if(limit > 0 && pool.length > limit) pool = pool.slice(0, limit);
+  if(pool.length === 0) return alert('No hay preguntas disponibles con los filtros seleccionados.');
+
+  currentSession.questions = pool;
+  currentSession.currentIndex = 0;
+  currentSession.hits = 0;
+  currentSession.misses = 0;
+  currentSession.userAnswers = {};
+
+  const timerBadge = document.getElementById('test-timer');
+  clearInterval(timerInterval);
+  if(timerSeconds > 0) {
+    timeRemaining = timerSeconds;
+    timerBadge.classList.remove('hidden');
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      timeRemaining--;
+      updateTimerDisplay();
+      if(timeRemaining <= 0) { clearInterval(timerInterval); alert('¡Tiempo agotado!'); finishTest(); }
+    }, 1000);
+  } else {
+    timerBadge.classList.add('hidden');
+  }
+
+  showView('test');
+  renderQuestion();
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(timeRemaining / 60);
+  const secs = timeRemaining % 60;
+  document.getElementById('test-timer').innerText = `⏱️ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+function renderQuestion() {
+  document.getElementById('explanation-box').classList.add('hidden');
+  document.getElementById('next-simulacro-btn').classList.add('hidden');
+
+  const q = currentSession.questions[currentSession.currentIndex];
+  const total = currentSession.questions.length;
+
+  document.getElementById('test-progress').innerText = `Pregunta ${currentSession.currentIndex + 1}/${total}`;
+  document.getElementById('test-score-live').innerText = currentSession.sessionMode === 'study' ? 
+    `Aciertos: ${currentSession.hits} | Fallos: ${currentSession.misses}` : `Modo Simulacro`;
+
+  const isStarred = db.stats[q.enunciado] && db.stats[q.enunciado].starred;
+  document.getElementById('star-btn').innerText = isStarred ? '⭐ Favorita' : '☆ Marcar Duda';
+  document.getElementById('q-enunciado').innerText = q.enunciado;
+
+  const optsContainer = document.getElementById('q-options');
+  optsContainer.innerHTML = '';
+
+  ['opcionA', 'opcionB', 'opcionC', 'opcionD'].forEach((key, idx) => {
+    if(q[key]) {
+      const letter = ['A', 'B', 'C', 'D'][idx];
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerText = `${letter}) ${q[key]}`;
+      if(currentSession.sessionMode === 'simulacro' && currentSession.userAnswers[currentSession.currentIndex] === letter) {
+        btn.classList.add('selected-simulacro');
+      }
+      btn.onclick = () => handleAnswerSelect(letter, btn);
+      optsContainer.appendChild(btn);
+    }
+  });
+
+  if(currentSession.sessionMode === 'simulacro') {
+    document.getElementById('next-simulacro-btn').classList.remove('hidden');
+  }
+}
+
+function toggleStarCurrent() {
+  const q = currentSession.questions[currentSession.currentIndex];
+  if(!db.stats[q.enunciado]) db.stats[q.enunciado] = { hits: 0, misses: 0, lastFailed: false, note: '', starred: true };
+  else db.stats[q.enunciado].starred = !db.stats[q.enunciado].starred;
+  saveDB(); renderQuestion();
+}
+
+function handleAnswerSelect(selectedLetter, clickedBtn) {
+  const q = currentSession.questions[currentSession.currentIndex];
+  const buttons = document.querySelectorAll('.option-btn');
+
+  if(currentSession.sessionMode === 'study') {
+    buttons.forEach(b => b.disabled = true);
+    const isCorrect = selectedLetter === q.correcta;
+
+    if(!db.stats[q.enunciado]) db.stats[q.enunciado] = { hits: 0, misses: 0, lastFailed: false, note: q.explicacion || '', starred: false };
+
+    const title = document.getElementById('expl-result-title');
+    if(isCorrect) {
+      clickedBtn.classList.add('correct');
+      currentSession.hits++;
+      db.stats[q.enunciado].hits++;
+      db.stats[q.enunciado].lastFailed = false;
+      title.innerText = '✅ ¡CORRECTO!';
+      title.style.color = 'var(--success)';
+    } else {
+      clickedBtn.classList.add('incorrect');
+      currentSession.misses++;
+      db.stats[q.enunciado].misses++;
+      db.stats[q.enunciado].lastFailed = true;
+      title.innerText = `❌ INCORRECTO (Correcta: ${q.correcta})`;
+      title.style.color = 'var(--error)';
+      buttons.forEach(b => { if(b.innerText.startsWith(q.correcta + ')')) b.classList.add('correct'); });
+    }
+
+    saveDB();
+    document.getElementById('expl-text-input').value = db.stats[q.enunciado].note || q.explicacion || '';
+    document.getElementById('explanation-box').classList.remove('hidden');
+  } else {
+    currentSession.userAnswers[currentSession.currentIndex] = selectedLetter;
+    buttons.forEach(b => b.classList.remove('selected-simulacro'));
+    clickedBtn.classList.add('selected-simulacro');
+  }
+}
+
+function saveAnnotation() {
+  const q = currentSession.questions[currentSession.currentIndex];
+  const newNote = document.getElementById('expl-text-input').value;
+  if(!db.stats[q.enunciado]) db.stats[q.enunciado] = { hits: 0, misses: 0, lastFailed: false, note: newNote, starred: false };
+  else db.stats[q.enunciado].note = newNote;
+  saveDB(); alert('Nota guardada.');
+}
+
+function nextQuestion() {
+  currentSession.currentIndex++;
+  if(currentSession.currentIndex < currentSession.questions.length) renderQuestion();
+  else finishTest();
+}
+
+function nextQuestionSimulacro() { nextQuestion(); }
+
+function finishTest() {
+  clearInterval(timerInterval);
+  if(currentSession.sessionMode === 'simulacro') {
+    currentSession.hits = 0; currentSession.misses = 0;
+    currentSession.questions.forEach((q, idx) => {
+      const userAns = currentSession.userAnswers[idx];
+      if(!db.stats[q.enunciado]) db.stats[q.enunciado] = { hits: 0, misses: 0, lastFailed: false, note: q.explicacion || '', starred: false };
+      if(userAns === q.correcta) {
+        currentSession.hits++; db.stats[q.enunciado].hits++; db.stats[q.enunciado].lastFailed = false;
+      } else if(userAns) {
+        currentSession.misses++; db.stats[q.enunciado].misses++; db.stats[q.enunciado].lastFailed = true;
+      }
+    });
+  }
+
+  const netScore = currentSession.hits - (currentSession.misses * currentSession.penalty);
+  const total = currentSession.questions.length;
+  const grade = Math.max(0, (netScore / total) * 10).toFixed(2);
+
+  if(activeTargets.length === 1) {
+    const target = activeTargets[0];
+    if(db.folders[target.fId] && db.folders[target.fId].tests[target.tId]) {
+      db.folders[target.fId].tests[target.tId].lastScore = grade;
+    }
+  }
+  saveDB();
+
+  document.getElementById('res-score').innerText = `${grade} / 10`;
+  document.getElementById('res-details').innerHTML = `
+    Aciertos: <b>${currentSession.hits}</b> | Fallos: <b>${currentSession.misses}</b><br>
+    Descuento aplicado: <b>-${(currentSession.misses * currentSession.penalty).toFixed(2)}</b> pts<br>
+    Puntuación Neta: <b>${netScore.toFixed(2)}</b> de ${total}
+  `;
+  showView('results');
+}
+
+// IMPORTADOR DE TEXTO Y WORD
+function prepareNoTemplateView() {
+  const select = document.getElementById('nt-folder-select');
+  select.innerHTML = '';
+  const fIds = Object.keys(db.folders || {});
+  if(fIds.length === 0) { alert('Crea una carpeta primero.'); showView('my-exams'); return; }
+  fIds.forEach(id => { select.innerHTML += `<option value="${id}">${db.folders[id].name}</option>`; });
+  document.getElementById('nt-editor-panel').classList.add('hidden');
+}
+
+function handleTextFileUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(ext === 'txt') {
+    const reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('nt-raw-text').value = e.target.result; };
+    reader.readAsText(file);
+  } else if(ext === 'docx') {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      mammoth.extractRawText({arrayBuffer: e.target.result})
+        .then(function(result) { document.getElementById('nt-raw-text').value = result.value; })
+        .catch(function(err) { alert('Error al leer Word: ' + err.message); });
+    };
+    reader.readAsArrayBuffer(file);
+  } else { alert('Usa formato .txt o .docx'); }
+}
+
+function parseRawText() {
+  const raw = document.getElementById('nt-raw-text').value;
+  if(!raw.trim()) return alert('Pega el texto o sube un archivo.');
+  const lines = raw.split('\n');
+  tempParsedQuestions = [];
+  let currentQ = null;
+  let hasAsterisks = false;
+
+  lines.forEach(line => {
+    let trimmed = line.trim();
+    if(!trimmed) return;
+    const qMatch = trimmed.match(/^(\d+)[\.\-\)]\s*(.+)/);
+    const optMatch = trimmed.match(/^([\*]?\s*[a-dA-D][\*]?)\s*[\.\-\)]\s*(.+)/);
+
+    if(qMatch) {
+      if(currentQ) tempParsedQuestions.push(currentQ);
+      currentQ = { num: parseInt(qMatch[1]), enunciado: qMatch[2], opcionA: '', opcionB: '', opcionC: '', opcionD: '', correcta: 'A', explicacion: '' };
+    } else if(optMatch && currentQ) {
+      let rawPrefix = optMatch[1];
+      let optText = optMatch[2];
+      let letter = rawPrefix.replace(/[\*\s]/g, '').toUpperCase();
+      let isCorrect = rawPrefix.includes('*') || optText.includes('*');
+      if(isCorrect) { hasAsterisks = true; currentQ.correcta = letter; optText = optText.replace(/\*/g, '').trim(); }
+      currentQ['opcion' + letter] = optText;
+    } else if(currentQ) {
+      if(trimmed.includes('*')) { hasAsterisks = true; trimmed = trimmed.replace(/\*/g, ''); }
+      currentQ.enunciado += ' ' + trimmed;
+    }
+  });
+  if(currentQ) tempParsedQuestions.push(currentQ);
+  if(tempParsedQuestions.length === 0) return alert('No se estructuraron preguntas.');
+
+  const statusBanner = document.getElementById('nt-status-banner');
+  const templateBox = document.getElementById('nt-template-box');
+  if(hasAsterisks) {
+    statusBanner.innerHTML = `<div class="alert-banner" style="background:rgba(16,185,129,0.15); border-color:var(--success); color:#34d399;">✨ Respuestas detectadas por asterisco (*).</div>`;
+    templateBox.classList.add('hidden');
+  } else {
+    statusBanner.innerHTML = `<div class="alert-banner">⚠️ Selecciona las correctas o aplica plantilla.</div>`;
+    templateBox.classList.remove('hidden');
+  }
+  renderNoTemplateEditorPanel();
+}
+
+function applyAnswerTemplate() {
+  const rawTpl = document.getElementById('nt-template-input').value;
+  if(!rawTpl.trim()) return;
+  const matches = [...rawTpl.matchAll(/(\d+)[\.\s\:\-]*([A-Da-d])/g)];
+  matches.forEach(m => {
+    const qNum = parseInt(m[1]);
+    const letter = m[2].toUpperCase();
+    const targetQ = tempParsedQuestions.find(q => q.num === qNum);
+    if(targetQ) targetQ.correcta = letter;
+  });
+  alert('Plantilla aplicada.');
+  renderNoTemplateEditorPanel();
+}
+
+function renderNoTemplateEditorPanel() {
+  const container = document.getElementById('nt-questions-list');
+  container.innerHTML = '';
+  tempParsedQuestions.forEach((q, idx) => {
+    container.innerHTML += `
+      <div class="editor-q-card">
+        <p><b>${idx + 1}. ${q.enunciado}</b></p>
+        <label style="font-size:0.85rem;">Correcta:</label>
+        <div class="key-selector">
+          ${['A','B','C','D'].map(l => `<div class="key-pill ${q.correcta === l ? 'active' : ''}" onclick="setNoTemplateKey(${idx}, '${l}')">${l}</div>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('nt-editor-panel').classList.remove('hidden');
+}
+
+function setNoTemplateKey(qIdx, letter) {
+  tempParsedQuestions[qIdx].correcta = letter;
+  renderNoTemplateEditorPanel();
+}
+
+function saveNoTemplateTest() {
+  const fId = document.getElementById('nt-folder-select').value;
+  const name = document.getElementById('nt-test-name').value.trim() || 'Examen Importado';
+  const testId = 't_' + Date.now();
+  db.folders[fId].tests[testId] = { name: name, questions: tempParsedQuestions, lastScore: null };
+  saveDB(); alert('¡Examen guardado!'); showView('my-exams');
+}
+
+// BACKUP
+function exportData() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+  const a = document.createElement('a');
+  a.setAttribute("href", dataStr); a.setAttribute("download", `hiitest_backup_${Date.now()}.json`);
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try { db = JSON.parse(e.target.result); saveDB(); renderHomeDashboard(); alert('Backup cargado.'); }
+    catch(err) { alert('Error al importar.'); }
+  };
+  reader.readAsText(file);
+}
+</script>
 </body>
 </html>
+```[cite: 4]
